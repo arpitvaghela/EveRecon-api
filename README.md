@@ -7,5 +7,5 @@
 ```sh
 python -m venv venv
 
-pip install fastapi[all] uvicorn[standard] sqlalchemy psycopg2 python-dotenv graphene pytest coverage black
+pip install fastapi[all] uvicorn[standard] sqlalchemy psycopg2 python-dotenv graphene pytest coverage black gunicorn
 ```
