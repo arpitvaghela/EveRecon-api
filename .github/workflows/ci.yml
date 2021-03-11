@@ -1,0 +1,23 @@
+#
+# This is a test CI file to be updated as required
+#
+name: test
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Install pip packages
+        run:  pip3 install --user -r ./backend/requirements.txt
+
+      - name: Run unit test
+        run: python -m coverage run -m pytest --verbose ; python -m coverage xml 
+        
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
