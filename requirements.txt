@@ -1,3 +1,5 @@
 graphene_django==2.15.0
 graphene==2.1.8
 Django==3.1.2
+django-graphql-jwt==0.3.0
+PyJWT==1.7.0
