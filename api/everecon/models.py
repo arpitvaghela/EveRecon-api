@@ -96,7 +96,7 @@ class Speaker(models.Model):
 class Community(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True) # Not setting null=True as a Community must have a description
-    logo = models.ImageField(upload_to='images/community/logos/', null=True)
+    logo = models.ImageField(upload_to='images/community/logos/', null=True, blank=True)
     banner = models.ImageField(upload_to='images/community/banners/', null=True, blank=True)
     featured_video = models.URLField(blank=True, null=True) # TODO: Add a validation for YouTube URL
     # featured_video = models.FileField(upload_to='videos/community/featured/', blank=True, null=True, verbose_name="")
@@ -105,7 +105,7 @@ class Community(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
-    members_count = models.IntegerField() # TODO: Update this automatically
+    members_count = models.IntegerField(blank=True, default=0) # TODO: Update this automatically
     website = models.URLField(null=True, blank=True)
     facebook = models.URLField(null=True, blank=True) # TODO: Validation for social media
     linkedin = models.URLField(null=True, blank=True)
