@@ -114,6 +114,7 @@ class Community(models.Model):
     discord = models.URLField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
+    followers = models.ManyToManyField(User ,related_name="communities", blank=True)
 
     def __str__(self):
         return self.name
