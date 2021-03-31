@@ -1,8 +1,11 @@
-Django==3.1.2
-django_graphql_jwt==0.3.0
-graphene_django==2.15.0
-graphene==2.1.8
-PyJWT==2.0.1
+coverage
 black
 psycopg2
 Pillow
+coverage
+gunicorn
+Django==3.1.2
+graphene==2.1.8
+graphene_django==2.15.0
+django_graphql_jwt==0.3.0
+PyJWT==2.0.1
