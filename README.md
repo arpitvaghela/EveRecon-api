@@ -7,5 +7,13 @@
 ```sh
 python -m venv venv
 
-pip install fastapi[all] uvicorn[standard] sqlalchemy psycopg2 python-dotenv graphene pytest coverage black gunicorn
+pip install -r requirements.txt
+```
+
+## Contribution
+
+- run `./precommit.sh` to run test and format codebase before commit
+
+```sh
+bash precommit.sh
 ```

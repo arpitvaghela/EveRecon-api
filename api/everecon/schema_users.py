@@ -1,9 +1,9 @@
-from django.contrib.auth import get_user_model
-from graphene_django import DjangoObjectType
-from everecon.models import Profile
-from graphql_jwt.shortcuts import create_refresh_token, get_token
 import graphene
 import graphql_jwt
+from django.contrib.auth import get_user_model
+from everecon.models import Profile
+from graphene_django import DjangoObjectType
+from graphql_jwt.shortcuts import create_refresh_token, get_token
 
 # Mutation: Create User
 # We want to return:
@@ -23,6 +23,7 @@ class UserType(DjangoObjectType):
 class UserProfile(DjangoObjectType):
     class Meta:
         model = Profile
+
 
 # CreateUser
 
@@ -50,13 +51,17 @@ class CreateUser(graphene.Mutation):
         token = get_token(user)
         refresh_token = create_refresh_token(user)
 
-        return CreateUser(user=user, profile=profile_obj, token=token, refresh_token=refresh_token)
+        return CreateUser(
+            user=user, profile=profile_obj, token=token, refresh_token=refresh_token
+        )
+
 
 # Finalize creating mutation for schema
 
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
+
 
 # Query: Find users / my own profile
 # Demonstrates auth block on seeing all user - only if I'm a manager
@@ -71,7 +76,7 @@ class Query(graphene.ObjectType):
         user = info.context.user
         # Check to to ensure you're signed-in to see yourself
         if user.is_anonymous:
-            raise Exception('Authentication Failure: Your must be signed in')
+            raise Exception("Authentication Failure: Your must be signed in")
         return user
 
     # def resolve_users(self, info):
