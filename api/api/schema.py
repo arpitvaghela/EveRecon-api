@@ -3,7 +3,7 @@ import graphql_jwt
 from graphene_django import DjangoObjectType
 from everecon import schema_init, schema_users, schema_community
 
-class Query(schema_init.Query, schema_users.Query, graphene.ObjectType):
+class Query(schema_init.Query, schema_users.Query, schema_community.Query, graphene.ObjectType):
     pass
 
 
