@@ -67,6 +67,7 @@ class CreateCommunity(graphene.Mutation):
         website = graphene.String()
         facebook = graphene.String()
         linkedin = graphene.String()
+        twitter = graphene.String()        
         instagram = graphene.String()
         discord = graphene.String()        
     
@@ -93,6 +94,7 @@ class UpdateCommunity(graphene.Mutation):
         linkedin = graphene.String()
         instagram = graphene.String()
         discord = graphene.String()        
+        is_active = graphene.Boolean()
 
     community = graphene.Field(CommunityType)
 
