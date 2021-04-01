@@ -33,28 +33,6 @@ class CommunityType(DjangoObjectType):
 #     class Meta:
 #         form_class = CommunityForm
 
-    # name = models.CharField(max_length=255)
-    # description = models.TextField(blank=True) # Not setting null=True as a Community must have a description
-    # logo = models.ImageField(upload_to='images/community/logos/', null=True, blank=True)
-    # banner = models.ImageField(upload_to='images/community/banners/', null=True, blank=True)
-    # featured_video = models.URLField(blank=True, null=True) # TODO: Add a validation for YouTube URL
-    # # featured_video = models.FileField(upload_to='videos/community/featured/', blank=True, null=True, verbose_name="")
-    # events = models.ManyToManyField(Event, related_name="communities", blank=True)
-    # address = models.TextField(null=True, blank=True)
-    # city = models.CharField(max_length=255, null=True, blank=True)
-    # country = models.CharField(max_length=255, null=True, blank=True)
-    # email = models.EmailField(null=True, blank=True)
-    # members_count = models.IntegerField(blank=True, default=0) # TODO: Update this automatically
-    # website = models.URLField(null=True, blank=True)
-    # facebook = models.URLField(null=True, blank=True) # TODO: Validation for social media
-    # linkedin = models.URLField(null=True, blank=True)
-    # twitter = models.URLField(null=True, blank=True)
-    # instagram = models.URLField(null=True, blank=True)
-    # discord = models.URLField(null=True, blank=True)
-    # is_active = models.BooleanField(default=True)
-    # creation_time = models.TimeField(auto_now_add=True, blank=True)
-    # followers = models.ManyToManyField(User ,related_name="communities", blank=True)
-
 class CreateCommunity(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
