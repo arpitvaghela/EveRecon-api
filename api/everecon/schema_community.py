@@ -5,6 +5,10 @@ from django.forms import ModelForm
 from everecon.models import Community
 from graphene_django.rest_framework.mutation import SerializerMutation
 from .serializers import *
+from .schema_event import EventType
+from .schema_users import UserType
+from django.contrib.auth.models import User
+
 # Object types
 class CommunityType(DjangoObjectType):
     class Meta:
@@ -47,15 +51,18 @@ class CreateCommunity(graphene.Mutation):
         linkedin = graphene.String()
         twitter = graphene.String()        
         instagram = graphene.String()
-        discord = graphene.String()        
+        discord = graphene.String()
+        creator = graphene.ID(required=True)        
     
     community = graphene.Field(CommunityType)
-
+    creator = graphene.Field(UserType)
+    
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community(**kwargs)
+        creator = User.objects.get(id=kwargs.get('creator'))
+        community = Community(**kwargs, creator=creator)
         community.save()
-        return cls(community=community)
+        return cls(community=community, creator=creator)
 
 class UpdateCommunity(graphene.Mutation):
     class Arguments:
@@ -73,16 +80,27 @@ class UpdateCommunity(graphene.Mutation):
         instagram = graphene.String()
         discord = graphene.String()        
         is_active = graphene.Boolean()
+        followers = graphene.List(graphene.ID)
 
     community = graphene.Field(CommunityType)
+    # followers = graphene.Field(UserType) # TODO: Check if this is required
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
         id = kwargs.pop('id')
+        followers = None
+        try:
+            followers = kwargs.pop('followers')            
+        except IndexError:
+            pass
+        # print(followers)
         community = Community.objects.get(id=id)
         for k, v in kwargs.items():
             community.k = v
         community.save()
+        if followers:
+            community.followers.add(*followers)
+        # print(community.followers.all())
         return cls(community=community)
 
 class DeleteCommunity(graphene.Mutation):
