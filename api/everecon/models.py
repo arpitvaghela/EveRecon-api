@@ -130,7 +130,8 @@ class Community(models.Model):
     discord = models.URLField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
-    followers = models.ManyToManyField(User, related_name="communities", blank=True)
+    followers = models.ManyToManyField(User ,related_name="communities", blank=True)
+    leader = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -150,16 +151,10 @@ class Sponsor(models.Model):
     def __str__(self):
         return self.name
 
-
-class CommunityLeader(models.Model):
-    creation_time = models.TimeField(auto_now_add=True, blank=True)
-    communities = models.ManyToManyField(
-        Community, related_name="community_leaders", blank=True
-    )
-    users = models.ManyToManyField(
-        User, related_name="community_leaders_at", blank=True
-    )
-
+# class CommunityLeader(models.Model):
+#     creation_time = models.TimeField(auto_now_add=True, blank=True)
+#     communities = models.ManyToManyField(Community, related_name="community_leaders", blank=True)
+#     users = models.ManyToManyField(User, related_name="community_leaders_at", blank=True)
 
 class CoreMember(models.Model):
     creation_time = models.TimeField(auto_now_add=True, blank=True)
