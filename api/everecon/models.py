@@ -40,7 +40,7 @@ def validation_linkedin(linkedin):
 # Validation for discord handle URL
 def validation_discord(discord):
     url_validator_message = 'Invalid handle URL!'
-    discord_regex = "/(?:(?:http|https):\/\/)?(?:www\.)?(discord.(gg|io|me|li)|discordapp.com/invite)/[^\s/]+?(?=\s) ^.{3,32}#[0-9]{4}$ "
+    discord_regex = "(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/users)\/.{3,32}#[0-9]{4}"
     url_validator = RegexValidator(regex=discord_regex, message=url_validator_message)
     return url_validator(discord)
 
