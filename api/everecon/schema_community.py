@@ -52,17 +52,18 @@ class CreateCommunity(graphene.Mutation):
         twitter = graphene.String()        
         instagram = graphene.String()
         discord = graphene.String()
-        creator = graphene.ID(required=True)        
+        # leader = graphene.ID(required=True)        
     
     community = graphene.Field(CommunityType)
-    creator = graphene.Field(UserType)
+    leader = graphene.Field(UserType)
     
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        creator = User.objects.get(id=kwargs.get('creator'))
-        community = Community(**kwargs, creator=creator)
+        # leader = User.objects.get(id=kwargs.pop('leader'))
+        leader = info.context.user
+        community = Community(**kwargs, leader=leader)
         community.save()
-        return cls(community=community, creator=creator)
+        return cls(community=community, leader=leader)
 
 class UpdateCommunity(graphene.Mutation):
     class Arguments:
@@ -91,13 +92,18 @@ class UpdateCommunity(graphene.Mutation):
         followers = None
         try:
             followers = kwargs.pop('followers')            
-        except IndexError:
+        except Exception:
             pass
         # print(followers)
-        community = Community.objects.get(id=id)
-        for k, v in kwargs.items():
-            community.k = v
-        community.save()
+        # community = Community.objects.get(id=id)
+        # for k, v in kwargs.items():
+        #     print(k, v)
+        #     community.k = v
+        #     print(community.k)
+        # community.save(force_update=True)
+        # community = Community.objects.filter(id=id).update(**kwargs)
+        community, created = Community.objects.update_or_create(defaults=kwargs, id=id)
+        print(community.name)
         if followers:
             community.followers.add(*followers)
         # print(community.followers.all())
