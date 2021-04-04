@@ -177,6 +177,8 @@ class Community(models.Model):
     creation_time = models.TimeField(auto_now_add=True, blank=True)
     followers = models.ManyToManyField(User, related_name="communities", blank=True)
     leader = models.ForeignKey(User, on_delete=models.CASCADE)
+    core_members = models.ManyToManyField(User, related_name="communities_core_members", blank=True)
+    volunteers = models.ManyToManyField(User, related_name="communities_volunteers", blank=True)
 
     def __str__(self):
         return self.name
@@ -199,23 +201,19 @@ class Sponsor(models.Model):
 #     communities = models.ManyToManyField(Community, related_name="community_leaders", blank=True)
 #     users = models.ManyToManyField(User, related_name="community_leaders_at", blank=True)
 
-class CoreMember(models.Model):
-    creation_time = models.TimeField(auto_now_add=True, blank=True)
-    communities = models.ManyToManyField(
-        Community, related_name="core_members", blank=True
-    )
-    users = models.ManyToManyField(User, related_name="core_members_at", blank=True)
+# class CoreMember(models.Model):
+#     creation_time = models.TimeField(auto_now_add=True, blank=True)
+#     communities = models.ManyToManyField(Community, related_name="core_members", blank=True)
+#     users = models.ManyToManyField(User, related_name="core_members_at", blank=True)
 
 
-class Member(models.Model):
-    creation_time = models.TimeField(auto_now_add=True, blank=True)
-    communities = models.ManyToManyField(Community, related_name="members", blank=True)
-    users = models.ManyToManyField(User, related_name="members_at", blank=True)
+# class Member(models.Model):
+#     creation_time = models.TimeField(auto_now_add=True, blank=True)
+#     communities = models.ManyToManyField(Community, related_name="members", blank=True)
+#     users = models.ManyToManyField(User, related_name="members_at", blank=True)
 
 
-class Volunteer(models.Model):
-    creation_time = models.TimeField(auto_now_add=True, blank=True)
-    communities = models.ManyToManyField(
-        Community, related_name="volunteers", blank=True
-    )
-    users = models.ManyToManyField(User, related_name="volunteers_at", blank=True)
+# class Volunteer(models.Model):
+#     creation_time = models.TimeField(auto_now_add=True, blank=True)
+#     communities = models.ManyToManyField(Community, related_name="volunteers", blank=True)
+#     users = models.ManyToManyField(User, related_name="volunteers_at", blank=True)
