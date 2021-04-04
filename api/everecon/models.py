@@ -112,7 +112,11 @@ class Tag(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    type = models.CharField(max_length=255)  # Type should have options
+    TYPE_CHOICES = [
+        ('V', 'Virtual'),
+        ('P', 'In-Person'),
+    ]
+    kind = models.CharField(max_length=255, choices=TYPE_CHOICES)  # Type should have options
     address = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)  # Needs to be discussed
     country = models.CharField(max_length=255, null=True, blank=True)
@@ -125,13 +129,13 @@ class Event(models.Model):
     featured_image = models.ImageField(upload_to='images/event/featured/', null=True, blank=True)
     is_active = models.BooleanField(default=True, blank=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
-    max_RSVP = models.IntegerField()
+    max_RSVP = models.IntegerField(default=300)
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
     attendees = models.ManyToManyField(User, related_name="events_attended", blank=True)
     speakers = models.ManyToManyField('Speaker', related_name="events", blank=True)
-
+    community = models.ForeignKey("Community", on_delete=models.CASCADE, related_name="events")
     def __str__(self):
         return self.name
 
@@ -156,7 +160,7 @@ class Community(models.Model):
     banner = models.ImageField(upload_to='images/community/banners/', null=True, blank=True)
     featured_video = models.URLField(blank=True, null=True, validators=[validation_youtube])
     # featured_video = models.FileField(upload_to='videos/community/featured/', blank=True, null=True, verbose_name="")
-    events = models.ManyToManyField(Event, related_name="communities", blank=True)
+    # events = models.ManyToManyField(Event, related_name="communities", blank=True)
     address = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
