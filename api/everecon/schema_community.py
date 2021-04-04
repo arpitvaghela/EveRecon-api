@@ -2,10 +2,9 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django.forms.mutation import DjangoFormMutation
 from django.forms import ModelForm
-from everecon.models import Community
+from .models import Community, Event, Category, Tag
 from graphene_django.rest_framework.mutation import SerializerMutation
 from .serializers import *
-from .schema_event import EventType
 from .schema_users import UserType
 from django.contrib.auth.models import User
 
@@ -13,6 +12,18 @@ from django.contrib.auth.models import User
 class CommunityType(DjangoObjectType):
     class Meta:
         model = Community
+
+class EventType(DjangoObjectType):
+    class Meta:
+        model = Event
+
+class CategoryType(DjangoObjectType):
+    class Meta:
+        model = Category
+
+class TagType(DjangoObjectType):
+    class Meta:
+        model = Tag
 
 # Queries
 
