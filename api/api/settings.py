@@ -45,7 +45,11 @@ INSTALLED_APPS = [
 
 GRAPHENE = {
     "SCHEMA": "api.schema.schema",
-    "MIDDLEWARE": ["graphql_jwt.middleware.JSONWebTokenMiddleware"],
+    'SCHEMA_OUTPUT': 'data/schema.json',  # defaults to schema.json,
+    'SCHEMA_INDENT': 2,
+    "MIDDLEWARE": [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware'
+    ]
 }
 
 GRAPHQL_JWT = {
