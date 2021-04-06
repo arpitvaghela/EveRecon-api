@@ -13,17 +13,21 @@ class CommunityType(DjangoObjectType):
     class Meta:
         model = Community
 
+
 class EventType(DjangoObjectType):
     class Meta:
         model = Event
+
 
 class CategoryType(DjangoObjectType):
     class Meta:
         model = Category
 
+
 class TagType(DjangoObjectType):
     class Meta:
         model = Tag
+
 
 # Queries
 
@@ -48,6 +52,7 @@ class TagType(DjangoObjectType):
 #     class Meta:
 #         form_class = CommunityForm
 
+
 class CreateCommunity(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -60,14 +65,14 @@ class CreateCommunity(graphene.Mutation):
         website = graphene.String()
         facebook = graphene.String()
         linkedin = graphene.String()
-        twitter = graphene.String()        
+        twitter = graphene.String()
         instagram = graphene.String()
         discord = graphene.String()
-        # leader = graphene.ID(required=True)        
-    
+        # leader = graphene.ID(required=True)
+
     community = graphene.Field(CommunityType)
     leader = graphene.Field(UserType)
-    
+
     @classmethod
     def mutate(cls, root, info, **kwargs):
         # leader = User.objects.get(id=kwargs.pop('leader'))
@@ -75,6 +80,7 @@ class CreateCommunity(graphene.Mutation):
         community = Community(**kwargs, leader=leader)
         community.save()
         return cls(community=community, leader=leader)
+
 
 class UpdateCommunity(graphene.Mutation):
     class Arguments:
@@ -90,7 +96,7 @@ class UpdateCommunity(graphene.Mutation):
         facebook = graphene.String()
         linkedin = graphene.String()
         instagram = graphene.String()
-        discord = graphene.String()        
+        discord = graphene.String()
         is_active = graphene.Boolean()
         followers = graphene.List(graphene.ID)
 
@@ -99,10 +105,10 @@ class UpdateCommunity(graphene.Mutation):
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        id = kwargs.pop('id')
+        id = kwargs.pop("id")
         followers = None
         try:
-            followers = kwargs.pop('followers')            
+            followers = kwargs.pop("followers")
         except Exception:
             pass
         # print(followers)
@@ -120,6 +126,7 @@ class UpdateCommunity(graphene.Mutation):
         # print(community.followers.all())
         return cls(community=community)
 
+
 class DeleteCommunity(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
@@ -132,93 +139,101 @@ class DeleteCommunity(graphene.Mutation):
         obj.delete()
         return cls(ok=True)
 
+
 class AddCoreMember(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
+        community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
-        community.core_members.add(kwargs.get('user'))
+        community.core_members.add(kwargs.get("user"))
         return cls(ok=True)
+
 
 class RemoveCoreMember(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
-        community.core_members.remove(kwargs.get('user'))
+        community = Community.objects.get(id=kwargs.get("community"))
+        community.core_members.remove(kwargs.get("user"))
         return cls(ok=True)
+
 
 class AddVolunteer(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
+        community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
-        community.volunteers.add(kwargs.get('user'))
+        community.volunteers.add(kwargs.get("user"))
         return cls(ok=True)
+
 
 class RemoveVolunteer(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
-        community.volunteers.remove(kwargs.get('user'))
+        community = Community.objects.get(id=kwargs.get("community"))
+        community.volunteers.remove(kwargs.get("user"))
         return cls(ok=True)
+
 
 class AddFollower(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
+        community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
-        community.followers.add(kwargs.get('user'))
+        community.followers.add(kwargs.get("user"))
         return cls(ok=True)
+
 
 class RemoveFollower(graphene.Mutation):
     class Arguments:
         community = graphene.ID(required=True)
         user = graphene.ID(required=True)
-    
+
     ok = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
-        community = Community.objects.get(id=kwargs.get('community'))
-        community.followers.remove(kwargs.get('user'))
+        community = Community.objects.get(id=kwargs.get("community"))
+        community.followers.remove(kwargs.get("user"))
         return cls(ok=True)
+
 
 # Query Class
 class Query(graphene.ObjectType):
-    community_by_id = graphene.Field(CommunityType, id=graphene.Int())
+    community_by_id = graphene.Field(CommunityType, id=graphene.ID())
 
     def resolve_community_by_id(root, info, id):
         return Community.objects.get(pk=id)
+
 
 # Mutation Class
 class Mutation(graphene.ObjectType):
