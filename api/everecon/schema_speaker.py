@@ -18,7 +18,7 @@ class CreateSpeaker(graphene.Mutation):
         facebook = graphene.String()
         instagram = graphene.String()
         description = graphene.String()
-    speaker = graphene.field(SpeakerType)
+    speaker = graphene.Field(SpeakerType)
 
     @permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
