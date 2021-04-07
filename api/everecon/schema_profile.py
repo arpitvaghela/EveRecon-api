@@ -1,6 +1,8 @@
 from .models import Profile, User
 from graphene_django import DjangoObjectType
 import graphene
+from django_graphene_permissions import permissions_checker
+from django_graphene_permissions.permissions import IsAuthenticated
 
 
 class ProfileType(DjangoObjectType):
@@ -24,5 +26,6 @@ class UpdateProfile(graphene.Mutation):
     user = graphene.Field(UserType)
 
     @classmethod
+    @permissions_checker([IsAuthenticated])
     def mutate(cls, root, info, **kwargs):
         pass

@@ -1,9 +1,13 @@
 import graphene
 import graphql_jwt
 from django.contrib.auth import get_user_model
-from everecon.models import Profile
 from graphene_django import DjangoObjectType
+from everecon.models import Profile, User
 from graphql_jwt.shortcuts import create_refresh_token, get_token
+import graphene
+import graphql_jwt
+from django_graphene_permissions import permissions_checker
+from django_graphene_permissions.permissions import IsAuthenticated
 
 # Mutation: Create User
 # We want to return:
@@ -38,8 +42,11 @@ class CreateUser(graphene.Mutation):
         username = graphene.String(required=True)
         password = graphene.String(required=True)
         email = graphene.String(required=True)
+        contact = graphene.String()
+        city = graphene.String()
+        country = graphene.String()
 
-    def mutate(self, info, username, password, email):
+    def mutate(self, info, username, password, email, **kwargs):
         user = get_user_model()(
             username=username,
             email=email,
@@ -48,8 +55,13 @@ class CreateUser(graphene.Mutation):
         user.save()
 
         profile_obj = Profile.objects.get(user=user.id)
+        for i in kwargs.keys():
+            setattr(profile_obj, i, kwargs[i])
+        profile_obj.save()
         token = get_token(user)
+
         refresh_token = create_refresh_token(user)
+        user = User.objects.get(id=user.id)
 
         return CreateUser(
             user=user, profile=profile_obj, token=token, refresh_token=refresh_token
@@ -72,11 +84,10 @@ class Query(graphene.ObjectType):
     whoami = graphene.Field(UserType)
     users = graphene.List(UserType)
 
+    @permissions_checker([IsAuthenticated])
     def resolve_whoami(self, info):
         user = info.context.user
         # Check to to ensure you're signed-in to see yourself
-        if user.is_anonymous:
-            raise Exception("Authentication Failure: Your must be signed in")
         return user
 
     # def resolve_users(self, info):
