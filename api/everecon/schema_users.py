@@ -82,7 +82,8 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     whoami = graphene.Field(UserType)
-    users = graphene.List(UserType)
+    myprofile = graphene.Field(UserType)
+    # users = graphene.List(UserType)
 
     @permissions_checker([IsAuthenticated])
     def resolve_whoami(self, info):
@@ -90,6 +91,11 @@ class Query(graphene.ObjectType):
         # Check to to ensure you're signed-in to see yourself
         return user
 
+    @permissions_checker([IsAuthenticated])
+    def resolve_myprofile(self, info):
+        user = info.context.user
+        # Check to to ensure you're signed-in to see yourself
+        return user
     # def resolve_users(self, info):
     #     user = info.context.user
     #     print(user)

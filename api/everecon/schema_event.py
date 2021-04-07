@@ -38,7 +38,53 @@ class CreateEvent(graphene.Mutation):
         # For datetime - https://github.com/graphql-python/graphene/issues/136
         event.refresh_from_db()
         event.tags.add(*tags)
+        event = Event.objects.get(id=event.id)
         return CreateEvent(event=event, community=community, category=category, tags=tags)
+
+
+class Register4Event(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    event = graphene.Field(EventType)
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
+        id = kwargs.pop("id")
+        user = info.context.user
+        Event.objects.get(id=id).attendees.add(user)
+        event = Event.objects.get(id=id)
+        return Register4Event(event=event)
+
+
+class AddSpeaker(graphene.Mutation):
+    class Arguments:
+        eventid = graphene.ID(required=True)
+        speakerid = graphene.ID(required=True)
+
+    ok = graphene.Boolean()
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, eventid, speakerid):
+        event = Event.objects.get(id=eventid)
+        # user = User.objects.get(kwargs.get(''))
+        event.speakers.add(speakerid)
+        return AddSpeaker(ok=True)
+
+
+class RemoveSpeaker(graphene.Mutation):
+    class Arguments:
+        eventid = graphene.ID(required=True)
+        speakerid = graphene.ID(required=True)
+
+    ok = graphene.Boolean()
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, eventid, speakerid):
+        event = Event.objects.get(id=eventid)
+        # user = User.objects.get(kwargs.get(''))
+        event.speakers.remove(speakerid)
+        return RemoveSpeaker(ok=True)
 
 
 # TODO: test
@@ -104,12 +150,20 @@ class DeleteEvent(graphene.Mutation):
 
 class Query(graphene.ObjectType):
     event_by_id = graphene.Field(EventType, id=graphene.ID())
+    events = graphene.List(EventType)
 
     def resolve_event_by_id(root, info, id):
         return Event.objects.get(pk=id)
+
+    def resolve_events(self, info):
+
+        return Event.objects.all().order_by('end_time')
 
 
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     update_event = UpdateEvent.Field()
     delete_event = DeleteEvent.Field()
+    register_event = Register4Event.Field()
+    add_speaker = AddSpeaker.Field()
+    remove_speaker = RemoveSpeaker.Field()

@@ -211,7 +211,7 @@ class AddFollower(graphene.Mutation):
     ok = graphene.Boolean()
 
     @permissions_checker([IsAuthenticated])
-    def mutate(cls, root, info, **kwargs):
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
         community.followers.add(kwargs.get("user"))
@@ -251,3 +251,5 @@ class Mutation(graphene.ObjectType):
     remove_core_member = RemoveCoreMember.Field()
     add_volunteer = AddVolunteer.Field()
     remove_volunteer = RemoveVolunteer.Field()
+    add_follower = AddFollower.Field()
+    remove_follower = RemoveFollower.Field()
