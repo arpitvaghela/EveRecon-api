@@ -17,9 +17,6 @@ class CreateSpeaker(graphene.Mutation):
         email = graphene.String()
         facebook = graphene.String()
         instagram = graphene.String()
-        profile_picture = models.ImageField(
-            upload_to="images/speaker/speaker_profile_pictures/", blank=True, null=True
-        )
         description = graphene.String()
     speaker = graphene.field(SpeakerType)
 
