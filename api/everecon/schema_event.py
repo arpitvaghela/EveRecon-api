@@ -2,6 +2,8 @@ from .models import Community, Event, Category, Tag
 from graphene_django import DjangoObjectType
 import graphene
 from .schema_community import CommunityType, EventType, CategoryType, TagType
+from django_graphene_permissions import permissions_checker
+from django_graphene_permissions.permissions import IsAuthenticated
 
 
 class CreateEvent(graphene.Mutation):
@@ -25,17 +27,18 @@ class CreateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         # print(kwargs)
         community = Community.objects.get(id=kwargs.pop("community"))
         category = Category.objects.get(id=kwargs.pop("category"))
         tags = Tag.objects.filter(id__in=kwargs.pop("tags"))
         event = Event(**kwargs, community=community, category=category)
         event.save()
-        event.refresh_from_db()  # For datetime - https://github.com/graphql-python/graphene/issues/136
+        # For datetime - https://github.com/graphql-python/graphene/issues/136
+        event.refresh_from_db()
         event.tags.add(*tags)
-        return cls(event=event, community=community, category=category, tags=tags)
+        return CreateEvent(event=event, community=community, category=category, tags=tags)
 
 
 # TODO: test
@@ -60,8 +63,8 @@ class UpdateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         category = None
         try:
@@ -80,9 +83,10 @@ class UpdateEvent(graphene.Mutation):
             event.tags.add(*tags)
         except Exception:
             pass
-        event.refresh_from_db()  # For datetime - https://github.com/graphql-python/graphene/issues/136
+        # For datetime - https://github.com/graphql-python/graphene/issues/136
+        event.refresh_from_db()
         community = event.community
-        return cls(event=event, community=community, tags=tags, category=category)
+        return UpdateEvent(event=event, community=community, tags=tags, category=category)
 
 
 class DeleteEvent(graphene.Mutation):
@@ -91,11 +95,11 @@ class DeleteEvent(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         obj = Event.objects.get(pk=kwargs["id"])
         obj.delete()
-        return cls(ok=True)
+        return DeleteEvent(ok=True)
 
 
 class Query(graphene.ObjectType):
