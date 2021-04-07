@@ -7,6 +7,9 @@ from graphene_django.rest_framework.mutation import SerializerMutation
 from .serializers import *
 from .schema_users import UserType
 from django.contrib.auth.models import User
+from django_graphene_permissions import permissions_checker
+from django_graphene_permissions.permissions import IsAuthenticated
+
 
 # Object types
 class CommunityType(DjangoObjectType):
@@ -73,13 +76,14 @@ class CreateCommunity(graphene.Mutation):
     community = graphene.Field(CommunityType)
     leader = graphene.Field(UserType)
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    # @classmethod
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         # leader = User.objects.get(id=kwargs.pop('leader'))
         leader = info.context.user
         community = Community(**kwargs, leader=leader)
         community.save()
-        return cls(community=community, leader=leader)
+        return CreateCommunity(community=community, leader=leader)
 
 
 class UpdateCommunity(graphene.Mutation):
@@ -119,7 +123,8 @@ class UpdateCommunity(graphene.Mutation):
         #     print(community.k)
         # community.save(force_update=True)
         # community = Community.objects.filter(id=id).update(**kwargs)
-        community, created = Community.objects.update_or_create(defaults=kwargs, id=id)
+        community, created = Community.objects.update_or_create(
+            defaults=kwargs, id=id)
         print(community.name)
         if followers:
             community.followers.add(*followers)
