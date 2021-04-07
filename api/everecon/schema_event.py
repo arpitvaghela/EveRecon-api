@@ -78,6 +78,8 @@ class UpdateEvent(graphene.Mutation):
             tags = kwargs.pop("tags")
             event.tags.clear()
             event.tags.add(*tags)
+        except Exception:
+            pass
         event.refresh_from_db()  # For datetime - https://github.com/graphql-python/graphene/issues/136
         community = event.community
         return cls(event=event, community=community, tags=tags, category=category)
