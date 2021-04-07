@@ -1,13 +1,18 @@
 import graphene
 import graphql_jwt
 from graphene_django import DjangoObjectType
-from everecon import schema_init, schema_users, schema_community, schema_event
+from everecon import schema_init, schema_users, schema_community, schema_event, schema_speaker
 
-class Query(schema_init.Query, schema_users.Query, schema_community.Query, schema_event.Query, graphene.ObjectType):
+
+class Query(schema_init.Query, schema_users.Query,
+            schema_community.Query, schema_event.Query,
+            schema_speaker.Query, graphene.ObjectType):
     pass
 
 
-class Mutation(schema_users.Mutation, schema_community.Mutation, schema_event.Mutation, graphene.ObjectType):
+class Mutation(schema_users.Mutation, schema_community.Mutation,
+               schema_event.Mutation, schema_speaker.Mutation,
+               graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     verify_token = graphql_jwt.Verify.Field()
