@@ -107,8 +107,8 @@ class UpdateCommunity(graphene.Mutation):
     community = graphene.Field(CommunityType)
     # followers = graphene.Field(UserType) # TODO: Check if this is required
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         followers = None
         try:
@@ -129,7 +129,7 @@ class UpdateCommunity(graphene.Mutation):
         if followers:
             community.followers.add(*followers)
         # print(community.followers.all())
-        return cls(community=community)
+        return UpdateCommunity(community=community)
 
 
 class DeleteCommunity(graphene.Mutation):
@@ -138,11 +138,11 @@ class DeleteCommunity(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         obj = Community.objects.get(pk=kwargs["id"])
         obj.delete()
-        return cls(ok=True)
+        return DeleteCommunity(ok=True)
 
 
 class AddCoreMember(graphene.Mutation):
@@ -152,12 +152,12 @@ class AddCoreMember(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
         community.core_members.add(kwargs.get("user"))
-        return cls(ok=True)
+        return AddCoreMember(ok=True)
 
 
 class RemoveCoreMember(graphene.Mutation):
@@ -167,11 +167,11 @@ class RemoveCoreMember(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         community.core_members.remove(kwargs.get("user"))
-        return cls(ok=True)
+        return RemoveCoreMember(ok=True)
 
 
 class AddVolunteer(graphene.Mutation):
@@ -181,12 +181,12 @@ class AddVolunteer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
         community.volunteers.add(kwargs.get("user"))
-        return cls(ok=True)
+        return AddVolunteer(ok=True)
 
 
 class RemoveVolunteer(graphene.Mutation):
@@ -196,11 +196,11 @@ class RemoveVolunteer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         community.volunteers.remove(kwargs.get("user"))
-        return cls(ok=True)
+        return RemoveVolunteer(ok=True)
 
 
 class AddFollower(graphene.Mutation):
@@ -210,12 +210,12 @@ class AddFollower(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
+    @permissions_checker([IsAuthenticated])
     def mutate(cls, root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         # user = User.objects.get(kwargs.get(''))
         community.followers.add(kwargs.get("user"))
-        return cls(ok=True)
+        return AddFollower(ok=True)
 
 
 class RemoveFollower(graphene.Mutation):
@@ -225,11 +225,11 @@ class RemoveFollower(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
         community.followers.remove(kwargs.get("user"))
-        return cls(ok=True)
+        return RemoveFollower(ok=True)
 
 
 # Query Class

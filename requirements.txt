@@ -5,7 +5,6 @@ Pillow
 coverage
 gunicorn
 Django==3.1.2
-graphene==2.1.8
-graphene_django==2.15.0
-django_graphql_jwt==0.3.0
-PyJWT==2.0.1
+django-graphql-jwt==0.3.0
+PyJWT==1.7.0
+django-graphene-permissions==0.0.4
