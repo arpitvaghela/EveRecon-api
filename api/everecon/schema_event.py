@@ -27,7 +27,7 @@ class CreateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    # @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
         # print(kwargs)
         community = Community.objects.get(id=kwargs.pop("community"))
@@ -40,9 +40,9 @@ class CreateEvent(graphene.Mutation):
         event.save()
         event.refresh_from_db()
         for tag in tags:
-            print(tag)
+            # print(tag)
             tag_obj, created = Tag.objects.get_or_create(name=tag.lower())
-            print(tag_obj.name, created)
+            # print(tag_obj.name, created)
             tag_obj.events.add(event)
         # For datetime - https://github.com/graphql-python/graphene/issues/136
         # event.tags.add(*tags)
@@ -112,7 +112,7 @@ class UpdateEvent(graphene.Mutation):
         end_time = graphene.DateTime()
         max_RSVP = graphene.Int()
         category = graphene.ID()
-        tags = graphene.List(graphene.ID)
+        tags = graphene.List(graphene.String)
 
     event = graphene.Field(EventType)
     community = graphene.Field(CommunityType)
@@ -122,27 +122,43 @@ class UpdateEvent(graphene.Mutation):
     @permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
-        category = None
-        try:
-            category_id = kwargs.pop("category")
-            category = Category.objects.get(category_id)
-        except Exception:
-            pass
-        event = Event.objects.update_or_create(
-            defaults=kwargs, id=id, category=category
-        )
-
-        event.save()
         try:
             tags = kwargs.pop("tags")
-            event.tags.clear()
-            event.tags.add(*tags)
+
         except Exception:
             pass
-        # For datetime - https://github.com/graphql-python/graphene/issues/136
-        event.refresh_from_db()
-        community = event.community
-        return UpdateEvent(event=event, community=community, tags=tags, category=category)
+        Event.objects.filter(id=id).update(**kwargs)
+        event = Event.objects.get(id=id)
+        if tags:
+            event.tags.clear()
+            for tag in tags:
+                # print(tag)
+                tag_obj, created = Tag.objects.get_or_create(name=tag.lower())
+                # print(tag_obj.name, created)
+                tag_obj.events.add(event)
+        tags = event.tags.all()
+        return UpdateEvent(event=event, community=event.community, tags=tags, category=event.category)
+        # category = None
+        # try:
+        # category_id = kwargs.pop("category")
+        # category = Category.objects.get(category_id)
+        # except Exception:
+        #     pass
+        # event = Event.objects.update_or_create(
+        #     defaults=kwargs, id=id, category=category
+        # )
+
+        # event.save()
+        # try:
+        #     tags = kwargs.pop("tags")
+        #     event.tags.clear()
+        #     event.tags.add(*tags)
+        # except Exception:
+        #     pass
+        # # For datetime - https://github.com/graphql-python/graphene/issues/136
+        # event.refresh_from_db()
+        # community = event.community
+        # return UpdateEvent(event=event, community=community, tags=tags, category=category)
 
 
 class DeleteEvent(graphene.Mutation):
