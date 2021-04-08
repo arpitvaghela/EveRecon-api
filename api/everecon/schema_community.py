@@ -115,17 +115,17 @@ class UpdateCommunity(graphene.Mutation):
             followers = kwargs.pop("followers")
         except Exception:
             pass
-        # print(followers)
         # community = Community.objects.get(id=id)
         # for k, v in kwargs.items():
-        #     print(k, v)
         #     community.k = v
-        #     print(community.k)
-        # community.save(force_update=True)
+        # community.save()
+        # print(followers)
         # community = Community.objects.filter(id=id).update(**kwargs)
-        community, created = Community.objects.update_or_create(
-            defaults=kwargs, id=id)
-        print(community.name)
+        # community, created = Community.objects.update_or_create(
+        #     defaults=kwargs, id=id)
+        Community.objects.filter(id=id).update(**kwargs)
+        community = Community.objects.get(id=id)
+        # print(community.name)
         if followers:
             community.followers.add(*followers)
         # print(community.followers.all())
