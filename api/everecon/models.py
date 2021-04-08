@@ -140,7 +140,7 @@ class Event(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, null=True, blank=True
     )
-    tags = models.ManyToManyField(Tag, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="events")
     attendees = models.ManyToManyField(User, related_name="events_attended", blank=True)
     speakers = models.ManyToManyField("Speaker", related_name="events", blank=True)
     community = models.ForeignKey(
