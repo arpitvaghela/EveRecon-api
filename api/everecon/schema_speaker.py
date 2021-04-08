@@ -24,7 +24,7 @@ class CreateSpeaker(graphene.Mutation):
     def mutate(root, info, **kwargs):
         speaker = Speaker(**kwargs)
         speaker.save()
-        return CreateSpeaker(community=speaker)
+        return CreateSpeaker(speaker=speaker)
 
 
 class Query(graphene.ObjectType):
