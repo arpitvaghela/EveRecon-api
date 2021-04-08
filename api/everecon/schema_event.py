@@ -20,25 +20,35 @@ class CreateEvent(graphene.Mutation):
         max_RSVP = graphene.Int()
         community = graphene.ID()
         category = graphene.ID(required=True)
-        tags = graphene.List(graphene.ID)
+        tags = graphene.List(graphene.String)
 
     event = graphene.Field(EventType)
     community = graphene.Field(CommunityType)
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @permissions_checker([IsAuthenticated])
+    # @permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
         # print(kwargs)
         community = Community.objects.get(id=kwargs.pop("community"))
         category = Category.objects.get(id=kwargs.pop("category"))
-        tags = Tag.objects.filter(id__in=kwargs.pop("tags"))
+        # tags = Tag.objects.filter(id__in=kwargs.pop("tags"))
+        # tag_obj = 
+        tags = kwargs.pop("tags")
+        print(tags) 
         event = Event(**kwargs, community=community, category=category)
         event.save()
-        # For datetime - https://github.com/graphql-python/graphene/issues/136
         event.refresh_from_db()
-        event.tags.add(*tags)
-        event = Event.objects.get(id=event.id)
+        for tag in tags:
+            print(tag)
+            tag_obj, created = Tag.objects.get_or_create(name=tag.lower())
+            print(tag_obj.name, created)
+            tag_obj.events.add(event)
+        # For datetime - https://github.com/graphql-python/graphene/issues/136
+        # event.tags.add(*tags)
+        # event = Event.objects.get(id=event.id)
+        tags = event.tags.all()
+        print(tags)
         return CreateEvent(event=event, community=community, category=category, tags=tags)
 
 
