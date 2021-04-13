@@ -7,22 +7,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+    - name: Python Django Coverage GitHub Action
+      uses: dc740/django-coveragepy-github-action@0.9
 
-      - name: Install pip packages
-        run:  pip3 install --user -r ./requirements.txt
+#       - uses: actions/checkout@v2
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+
+#       - name: Install pip packages
+#         run:  pip3 install --user -r ./requirements.txt
       
-      - name: Setup postgresql 
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '11' 
+#       - name: Setup postgresql 
+#         uses: harmon758/postgresql-action@v1
+#         with:
+#           postgresql version: '11' 
 
-      - name: Run unit test
-        run: cd api && python -m coverage run --source="./api" manage.py test
+#       - name: Run unit test
+#         run: cd api && python -m coverage run --source="./api" manage.py test
 
-      - uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+#       - uses: codecov/codecov-action@v1
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
 
