@@ -7,8 +7,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Python Django Coverage GitHub Action
-      uses: dc740/django-coveragepy-github-action@0.9
+    - name: Checkout action
+      uses: actions/checkout@v2
+    - name: Django Coverage action
+      uses: actions/python-django-coverage-gitHub-action@0.9
+      with:
+        django-app: 'api/api'
 
 #       - uses: actions/checkout@v2
 #       - name: Set up Python
