@@ -126,8 +126,8 @@ class Event(models.Model):
     live_URL = models.URLField(null=True, blank=True)  # Either of the two must be there
     # category = models.CharField(max_length=255)
     # tags = models.CharField(max_length=255)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.DateTimeField(default=timezone.now)
+    end_time = models.DateTimeField(default=timezone.now)
     # attendees = models.ForeignKey(User, on_delete=models.CASCADE)
     featured_image = models.ImageField(
         upload_to="images/event/featured/", null=True, blank=True
