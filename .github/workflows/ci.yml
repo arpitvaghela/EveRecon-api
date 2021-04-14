@@ -10,7 +10,7 @@ jobs:
     - name: Checkout action
       uses: actions/checkout@v2
     - name: Python Django Coverage GitHub Action
-      uses: dc740/django-coveragepy-github-action@0.9
+      uses: yashrajkakkad/django-coveragepy-github-action@0.1
       # with:
         # django-app: 'api'
 
