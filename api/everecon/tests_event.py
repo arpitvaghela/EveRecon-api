@@ -53,7 +53,8 @@ class EveReconTest(JSONWebTokenTestCase):
     def create_dummy_event(self):
         community = self.create_dummy_community()
         category = self.create_dummy_category()
-        date_time = datetime.now()
+        # date_time = datetime.now()
+        date_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
         event = Event.objects.create(
             name="Test_event",
             address="Test_address",
