@@ -3,10 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import RegexValidator
-<<<<<<< HEAD
 from django.utils import timezone
-=======
->>>>>>> 2879c80d29307757453c64144953bee4ab043735
 
 
 # Validation for facebook handle URL
