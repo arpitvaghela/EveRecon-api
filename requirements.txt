@@ -2,6 +2,7 @@ aniso8601==7.0.0
 asgiref==3.2.10
 certifi==2020.12.5
 chardet==4.0.0
+coverage==5.5
 Django==3.1.2
 django-graphene-permissions==0.0.4
 django-graphql-jwt==0.3.0
