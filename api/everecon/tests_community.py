@@ -17,6 +17,7 @@ class EveReconTest(JSONWebTokenTestCase):
         global id
         user = User.objects.create(
             username="Test_username_" + str(id),
+            password="Test@10",
             email="test@gmail.com",
         )
         user.set_password("Test_password")
@@ -44,7 +45,7 @@ class EveReconTest(JSONWebTokenTestCase):
         )
 
     def setUp(self):
-        self.user = get_user_model().objects.create(username='test')
+        self.user = get_user_model().objects.create(username='test',password='Test@10')
         self.client.authenticate(self.user)
 
         # Clear database
@@ -86,7 +87,7 @@ class EveReconTest(JSONWebTokenTestCase):
             "country": "Test_country",
             "description": "Test_description",
             "discord": "https://discordapp.com/users/mrparth23#0639",
-            "email": "Test_email",
+            "email": "Test@gmail.com",
             "facebook": "https://www.facebook.com/mrparth23/",
             "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
             "instagram": "https://www.instagram.com/mr.parth23/",
@@ -114,6 +115,9 @@ class EveReconTest(JSONWebTokenTestCase):
 
         response = self.client.execute(create_community, variables)
         content = list(response.data.items())[0][1]
+        #print("This is error")
+        #print(response.to_dict())
+        #print(content)
         self.assertEquals(content, data)
 
     # Update Community testing
@@ -396,3 +400,367 @@ class EveReconTest(JSONWebTokenTestCase):
         response = self.client.execute(remove_follower, variables)
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
+    
+    # Invalid EmailID in create community
+    def test_create_community_email_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "Test_email",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+        #print(response.to_dict())
+        # print('\n')
+        # print(data)
+        #self.assertEquals(content, data)
+
+    # Facebook validatoin test in createCommunity
+    def test_create_community_facebook_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.instagram.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+    
+    # Instagram validatoin test in createCommunity
+    def test_create_community_instagram_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.facebook.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+    
+    # Discord validatoin test in createCommunity
+    def test_create_community_discord_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "test",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+    
+    # Youtube validatoin test in createCommunity
+    def test_create_community_youtube_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://discordapp.com/users/mrparth23#0639",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+    
+    # linkedin validatoin test in createCommunity
+    def test_create_community_linkedin_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.instagram.com/mr.parth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+
+    # Twitter validatoin test in createCommunity
+    def test_create_community_twitter_validation(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description":"Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://www.facebook.com/mr.parth23/",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+
+    # Create community without required field
+    def test_create_community_without_desc(self):
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community{
+                    address
+                    city
+                    country
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
+                    name
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "discord": "ayush",
+            "email": "Test_email",
+            "facebook": "https://www.facebook.com/mr.parth23/",
+            "featuredVideo": "https://www.facebook.com/",
+            "instagram": "https://www.facebook.com/mr.parth23/",
+            "linkedin": "https://www.facebook.com/",
+            "name": "Test_community",
+            "twitter": "https://www.facebook.com/",
+            "website": "https://www.facebook.com/"
+        }
+
+        response = self.client.execute(create_community, variables)
+        #content = list(response.data.items())[0][1]
+        #self.assertEquals(content,data)
+        self.assertIn('errors',response.to_dict())
+
+    

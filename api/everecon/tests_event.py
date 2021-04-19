@@ -24,6 +24,7 @@ class EveReconTest(JSONWebTokenTestCase):
         global id
         user = User.objects.create(
             username="Test_username_" + str(id),
+            password = "Test@10",
             email="test@gmail.com",
         )
         user.set_password("Test_password")
@@ -85,7 +86,7 @@ class EveReconTest(JSONWebTokenTestCase):
         return Category.objects.create(name="Test_category")
 
     def setUp(self):
-        self.user = get_user_model().objects.create(username='test')
+        self.user = get_user_model().objects.create(username='test',password="Test@10")
         self.client.authenticate(self.user)
 
     # Create Event
