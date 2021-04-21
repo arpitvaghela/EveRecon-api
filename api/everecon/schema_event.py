@@ -259,15 +259,15 @@ class Query(graphene.ObjectType):
         if desc:
             filt = "-"+filt
         if kind == 0:
-            return Community.objects.all().order_by(filt)
+            return Event.objects.all().order_by(filt)
         if kind == 1:
-            listcom = Community.objects.all().order_by(filt)
+            listcom = Event.objects.all().order_by(filt)
             if len(listcom) > length:
                 return listcom[:length]
             else:
                 return listcom
         else:
-            listcom = Community.objects.all().order_by(filt)
+            listcom = Event.objects.all().order_by(filt)
             if len(listcom) > length:
                 return sample(listcom, length)
             else:

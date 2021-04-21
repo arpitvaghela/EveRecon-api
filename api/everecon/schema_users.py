@@ -41,6 +41,8 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         username = graphene.String(required=True)
         password = graphene.String(required=True)
+        firstname = graphene.String()
+        lastname = graphene.String()
         email = graphene.String(required=True)
         contact = graphene.String()
         city = graphene.String()
@@ -52,8 +54,12 @@ class CreateUser(graphene.Mutation):
             email=email,
         )
         user.set_password(password)
+        fname = kwargs.pop("firstname")
+        lname = kwargs.pop("lastname")
+        user.first_name = fname
+        user.last_name = lname
+        # print(user.firstName)
         user.save()
-
         profile_obj = Profile.objects.get(user=user.id)
         for i in kwargs.keys():
             setattr(profile_obj, i, kwargs[i])
