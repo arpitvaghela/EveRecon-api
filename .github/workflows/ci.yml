@@ -2,6 +2,7 @@
 # This is a test CI file to be updated as required
 #
 name: test
+working-directory: ./api
 on: [push, pull_request, workflow_dispatch]
 jobs:
   test:
@@ -11,7 +12,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Python Django Coverage GitHub Action
       uses: actions/python-django-coverage-gitHub-action@0.9
-      working-directory: ./api
+#      working-directory: ./api
       with:
         django-app: 'api'
 
