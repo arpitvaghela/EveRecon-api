@@ -68,11 +68,34 @@ class CreateUser(graphene.Mutation):
         )
 
 
+class UpdateProfilePicture(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+        # nothing needed for uploading file
+     # your return fields
+    success = graphene.String()
+    picture = graphene.String()
+
+    def mutate(self,  info, id, *args, **kwargs):
+        # When using it in Django, context will be the request
+        files = info.context.FILES
+        profile = User.objects.get(id=id).profile
+        profile.profile_picture = files["file"]
+        profile.save()
+        profile = User.objects.get(id=id).profile
+        # print(profile.profile_picture)
+        # Or, if used in Flask, context will be the flask global request
+        # files = context.files
+        # do something with files
+        return UpdateProfilePicture(success=True, picture=profile.profile_picture.url)
+
 # Finalize creating mutation for schema
 
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
+    update_profpic = UpdateProfilePicture.Field()
 
 
 # Query: Find users / my own profile

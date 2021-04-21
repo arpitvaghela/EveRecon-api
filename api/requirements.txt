@@ -1,8 +1,0 @@
-pytz==2021.1
-Django==3.1.2
-graphene_django==2.15.0
-graphene==2.1.8
-django_graphql_jwt==0.3.1
-django_graphene_permissions==0.0.4
-djangorestframework==3.12.4
-PyJWT==2.0.1

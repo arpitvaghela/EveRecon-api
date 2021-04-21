@@ -1,3 +1,5 @@
+from uuid import uuid4
+import os
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
@@ -63,6 +65,58 @@ def validation_youtube(youtube):
     return url_validator(youtube)
 
 
+def path_and_rename_profile(instance, filename):
+    upload_to = 'profiles'
+    ext = filename.split('.')[-1]
+    # get filename
+    if instance.pk:
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        # set filename as random string
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    # return the whole path to the file
+    return os.path.join(upload_to, filename)
+
+
+def path_and_rename_event(instance, filename):
+    upload_to = 'events'
+    ext = filename.split('.')[-1]
+    # get filename
+    if instance.pk:
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        # set filename as random string
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    # return the whole path to the file
+    return os.path.join(upload_to, filename)
+
+
+def path_and_rename_communitylogo(instance, filename):
+    upload_to = 'communitylogo'
+    ext = filename.split('.')[-1]
+    # get filename
+    if instance.pk:
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        # set filename as random string
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    # return the whole path to the file
+    return os.path.join(upload_to, filename)
+
+
+def path_and_rename_communitybanner(instance, filename):
+    upload_to = 'communitybanner'
+    ext = filename.split('.')[-1]
+    # get filename
+    if instance.pk:
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        # set filename as random string
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    # return the whole path to the file
+    return os.path.join(upload_to, filename)
+
+
 # User Model, using Django's inbuilt model for now so ignore this
 # class User(models.Model):
 #     username = models.CharField(max_length=255, unique=True)
@@ -86,7 +140,7 @@ class Profile(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     profile_picture = models.ImageField(
-        upload_to="images/", null=True, blank=True)
+        upload_to=path_and_rename_profile, null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -142,7 +196,7 @@ class Event(models.Model):
     end_time = models.DateTimeField(default=timezone.now)
     # attendees = models.ForeignKey(User, on_delete=models.CASCADE)
     featured_image = models.ImageField(
-        upload_to="images/event/featured/", null=True, blank=True
+        upload_to=path_and_rename_event, null=True, blank=True
     )
     is_active = models.BooleanField(default=True, blank=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
@@ -173,7 +227,7 @@ class Speaker(models.Model):
     facebook = models.URLField()
     instagram = models.URLField()
     profile_picture = models.ImageField(
-        upload_to="images/speaker/profile_pictures/", blank=True, null=True
+        upload_to=path_and_rename_profile, blank=True, null=True
     )
     description = models.TextField()
 
@@ -187,9 +241,9 @@ class Community(models.Model):
         blank=True
     )  # Not setting null=True as a Community must have a description
     logo = models.ImageField(
-        upload_to="images/community/logos/", null=True, blank=True)
+        upload_to=path_and_rename_communitybanner, null=True, blank=True)
     banner = models.ImageField(
-        upload_to="images/community/banners/", null=True, blank=True
+        upload_to=path_and_rename_communitylogo, null=True, blank=True
     )
     featured_video = models.URLField(
         blank=True, null=True, validators=[validation_youtube]
