@@ -84,10 +84,6 @@ class UpdateProfilePicture(graphene.Mutation):
         profile.profile_picture = files["file"]
         profile.save()
         profile = User.objects.get(id=id).profile
-        # print(profile.profile_picture)
-        # Or, if used in Flask, context will be the flask global request
-        # files = context.files
-        # do something with files
         return UpdateProfilePicture(success=True, picture=profile.profile_picture.url)
 
 # Finalize creating mutation for schema

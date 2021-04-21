@@ -9,6 +9,7 @@ from .schema_users import UserType
 from django.contrib.auth.models import User
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
+from random import sample
 
 
 # Object types
@@ -232,15 +233,64 @@ class RemoveFollower(graphene.Mutation):
         return RemoveFollower(ok=True)
 
 
+class UpdateCommunityImages(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+        # nothing needed for uploading file
+     # your return fields
+    success = graphene.String()
+    logo = graphene.String()
+    banner = graphene.String()
+
+    def mutate(self,  info, id, *args, **kwargs):
+        # When using it in Django, context will be the request
+        files = info.context.FILES
+        community: Community
+        community = Community.objects.get(id=id)
+        if files["logo"]:
+            community.logo = files["logo"]
+        if files["banner"]:
+            community.banner = files["banner"]
+        community.save()
+        community = Community.objects.get(id=id)
+        return UpdateCommunityImages(success=True, logo=community.logo, banner=community.banner)
+
+
 # Query Class
 class Query(graphene.ObjectType):
     community_by_id = graphene.Field(CommunityType, id=graphene.ID())
+    # returns all communities or x communities or x sampeled communities
+    community_list = graphene.List(CommunityType, kind=graphene.Int(
+    ), length=graphene.Int(), filter=graphene.String(), desc=graphene.Boolean())
 
     def resolve_community_by_id(root, info, id):
         return Community.objects.get(pk=id)
 
+    def resolve_community_list(root, info, kind, length, filter, desc):
+        filt = "creation_time"
+        filters = ['creation_time', 'members_count']
+        if filter in filters:
+            filt = filter
+        if desc:
+            filt = "-"+filt
 
-# Mutation Class
+        if kind == 0:
+            return Community.objects.all().order_by(filt)
+        if kind == 1:
+            listcom = Community.objects.all().order_by(filt)
+            if len(listcom) > length:
+                return listcom[:length]
+            else:
+                return listcom
+        else:
+            listcom = Community.objects.all().order_by(filt)
+            if len(listcom) > length:
+                return sample(listcom, length)
+            else:
+                return listcom
+
+
 class Mutation(graphene.ObjectType):
     create_community = CreateCommunity.Field()
     update_community = UpdateCommunity.Field()

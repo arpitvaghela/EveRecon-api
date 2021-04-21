@@ -5,6 +5,7 @@ from .schema_community import CommunityType, EventType, CategoryType, TagType
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
 from django.contrib.auth.models import User
+from random import sample
 
 
 class CreateEvent(graphene.Mutation):
@@ -218,16 +219,67 @@ class DeleteEvent(graphene.Mutation):
         return DeleteEvent(ok=True)
 
 
+class UpdateEventImage(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+        # nothing needed for uploading file
+     # your return fields
+    success = graphene.String()
+    picture = graphene.String()
+
+    def mutate(self,  info, id, *args, **kwargs):
+        # When using it in Django, context will be the request
+        files = info.context.FILES
+        event: Event
+        event = Event.objects.get(id=id)
+        event.featured_image = files["file"]
+        event.save()
+        event = Event.objects.get(id=id)
+        return UpdateEventImage(success=True, picture=event.featured_image)
+
+
 class Query(graphene.ObjectType):
     event_by_id = graphene.Field(EventType, id=graphene.ID())
-    events = graphene.List(EventType)
+    events = graphene.List(EventType, kind=graphene.Int(), length=graphene.Int(),
+                           filter=graphene.String(), desc=graphene.Boolean())
+    events_cat = graphene.List(
+        EventType, cat=graphene.ID())
+    categories = graphene.List(CategoryType)
 
     def resolve_event_by_id(root, info, id):
         return Event.objects.get(pk=id)
 
-    def resolve_events(self, info):
+    def resolve_events(self, info, kind, length, filter, desc):
 
-        return Event.objects.all().order_by('end_time')
+        filt = "start_time"
+        filters = ['start_time', 'end_time', 'creation_time']
+        if filter in filters:
+            filt = filter
+        if desc:
+            filt = "-"+filt
+        if kind == 0:
+            return Community.objects.all().order_by(filt)
+        if kind == 1:
+            listcom = Community.objects.all().order_by(filt)
+            if len(listcom) > length:
+                return listcom[:length]
+            else:
+                return listcom
+        else:
+            listcom = Community.objects.all().order_by(filt)
+            if len(listcom) > length:
+                return sample(listcom, length)
+            else:
+                return listcom
+
+    def resolve_events_cat(root, info, cat):
+        print(Category.objects.get(id=cat).event_set.all())
+        return Category.objects.get(id=cat).event_set.all()
+
+    def resolve_categories(root, info):
+        print("hello")
+        return Category.objects.all()
 
 
 class Mutation(graphene.ObjectType):
