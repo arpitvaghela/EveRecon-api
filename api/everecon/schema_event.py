@@ -4,6 +4,7 @@ import graphene
 from .schema_community import CommunityType, EventType, CategoryType, TagType
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
+from django.contrib.auth.models import User
 
 
 class CreateEvent(graphene.Mutation):
@@ -33,9 +34,9 @@ class CreateEvent(graphene.Mutation):
         community = Community.objects.get(id=kwargs.pop("community"))
         category = Category.objects.get(id=kwargs.pop("category"))
         # tags = Tag.objects.filter(id__in=kwargs.pop("tags"))
-        # tag_obj = 
+        # tag_obj =
         tags = kwargs.pop("tags")
-        print(tags) 
+        print(tags)
         event = Event(**kwargs, community=community, category=category)
         event.save()
         event.refresh_from_db()
@@ -67,6 +68,49 @@ class Register4Event(graphene.Mutation):
         return Register4Event(event=event)
 
 
+class Checkin4Event(graphene.Mutation):
+    class Arguments:
+        eventid = graphene.ID(required=True)
+        userid = graphene.ID(required=True)
+
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
+        eventid = kwargs.pop("eventid")
+        userid = kwargs.pop("userid")
+        user = User.objects.get(id=userid)
+        attends = Event.objects.get(id=eventid).attendees
+        if user.id in attends:
+            Event.objects.get(id=eventid).checkins.add(user)
+            ok = True
+            message = "Successfully Checkedin"
+        else:
+            ok = False
+            message = "User hasn't registered for event"
+        return Checkin4Event(ok=ok,)
+
+
+class Uncheck4Event(graphene.Mutation):
+    class Arguments:
+        eventid = graphene.ID(required=True)
+        userid = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+    @ permissions_checker([IsAuthenticated])
+    def mutate(root, info, *args, **kwargs):
+        eventid = kwargs.pop("eventid")
+        userid = kwargs.pop("userid")
+        user = User.objects.get(userid)
+        event = Event.objects.get(id=eventid)
+        # user = User.objects.get(kwargs.get(''))
+        event.checkins.remove(user)
+        return RemoveSpeaker(ok=True, message="Checkin removed")
+
+
 class AddSpeaker(graphene.Mutation):
     class Arguments:
         eventid = graphene.ID(required=True)
@@ -74,7 +118,7 @@ class AddSpeaker(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsAuthenticated])
     def mutate(root, info, eventid, speakerid):
         event = Event.objects.get(id=eventid)
         # user = User.objects.get(kwargs.get(''))
@@ -89,7 +133,7 @@ class RemoveSpeaker(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsAuthenticated])
     def mutate(root, info, eventid, speakerid):
         event = Event.objects.get(id=eventid)
         # user = User.objects.get(kwargs.get(''))
@@ -119,7 +163,7 @@ class UpdateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         try:
@@ -167,7 +211,7 @@ class DeleteEvent(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsAuthenticated])
     def mutate(root, info, **kwargs):
         obj = Event.objects.get(pk=kwargs["id"])
         obj.delete()
@@ -190,6 +234,8 @@ class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     update_event = UpdateEvent.Field()
     delete_event = DeleteEvent.Field()
+    checkin_event = Checkin4Event.Field()
+    uncheckin_event = Uncheck4Event.Field()
     register_event = Register4Event.Field()
     add_speaker = AddSpeaker.Field()
     remove_speaker = RemoveSpeaker.Field()

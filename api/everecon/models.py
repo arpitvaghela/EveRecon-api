@@ -9,12 +9,12 @@ import inspect
 import sys
 
 
-
 # Validation for facebook handle URL
 def validation_facebook(facebook):
     url_validator_message = "Invalid handle URL!"
     facebook_regex = "/(?:(?:http|https):\/\/)?(?:www\.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?"
-    url_validator = RegexValidator(regex=facebook_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=facebook_regex, message=url_validator_message)
     return url_validator(facebook)
 
 
@@ -22,7 +22,8 @@ def validation_facebook(facebook):
 def validation_instagram(instagram):
     url_validator_message = "Invalid handle URL!"
     instagram_regex = "/(?:(?:http|https):\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/([A-Za-z0-9-_\.]+)?"
-    url_validator = RegexValidator(regex=instagram_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=instagram_regex, message=url_validator_message)
     return url_validator(instagram)
 
 
@@ -30,7 +31,8 @@ def validation_instagram(instagram):
 def validation_twitter(twitter):
     url_validator_message = "Invalid handle URL!"
     twitter_regex = "/(?:(?:http|https):\/\/)?(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)?"
-    url_validator = RegexValidator(regex=twitter_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=twitter_regex, message=url_validator_message)
     return url_validator(twitter)
 
 
@@ -38,7 +40,8 @@ def validation_twitter(twitter):
 def validation_linkedin(linkedin):
     url_validator_message = "Invalid handle URL!"
     linkedin_regex = "/(?:(?:http|https):\/\/)?(?:www\.)?linkedin.com/((in/[^/]+/?)|(pub/[^/]+/((\w|\d)+/?){3}))$"
-    url_validator = RegexValidator(regex=linkedin_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=linkedin_regex, message=url_validator_message)
     return url_validator(linkedin)
 
 
@@ -46,7 +49,8 @@ def validation_linkedin(linkedin):
 def validation_discord(discord):
     url_validator_message = "Invalid handle URL!"
     discord_regex = "(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/users)\/.{3,32}#[0-9]{4}"
-    url_validator = RegexValidator(regex=discord_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=discord_regex, message=url_validator_message)
     return url_validator(discord)
 
 
@@ -54,7 +58,8 @@ def validation_discord(discord):
 def validation_youtube(youtube):
     url_validator_message = "Invalid handle URL!"
     youtube_regex = "/(?:(?:http|https):\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
-    url_validator = RegexValidator(regex=youtube_regex, message=url_validator_message)
+    url_validator = RegexValidator(
+        regex=youtube_regex, message=url_validator_message)
     return url_validator(youtube)
 
 
@@ -80,7 +85,8 @@ class Profile(models.Model):
     contact = models.CharField(max_length=15, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
-    profile_picture = models.ImageField(upload_to="images/", null=True, blank=True)
+    profile_picture = models.ImageField(
+        upload_to="images/", null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -128,7 +134,8 @@ class Event(models.Model):
         max_length=255, null=True, blank=True
     )  # Needs to be discussed
     country = models.CharField(max_length=255, null=True, blank=True)
-    live_URL = models.URLField(null=True, blank=True)  # Either of the two must be there
+    # Either of the two must be there
+    live_URL = models.URLField(null=True, blank=True)
     # category = models.CharField(max_length=255)
     # tags = models.CharField(max_length=255)
     start_time = models.DateTimeField(default=timezone.now)
@@ -145,8 +152,12 @@ class Event(models.Model):
         Category, on_delete=models.CASCADE, null=True, blank=True
     )
     tags = models.ManyToManyField(Tag, blank=True, related_name="events")
-    attendees = models.ManyToManyField(User, related_name="events_attended", blank=True)
-    speakers = models.ManyToManyField("Speaker", related_name="events", blank=True)
+    attendees = models.ManyToManyField(
+        User, related_name="events_attended", blank=True)
+    checkins = models.ManyToManyField(
+        User, related_name="events_checkedin", blank=True)
+    speakers = models.ManyToManyField(
+        "Speaker", related_name="events", blank=True)
     community = models.ForeignKey(
         "Community", on_delete=models.CASCADE, related_name="events"
     )
@@ -175,7 +186,8 @@ class Community(models.Model):
     description = models.TextField(
         blank=True
     )  # Not setting null=True as a Community must have a description
-    logo = models.ImageField(upload_to="images/community/logos/", null=True, blank=True)
+    logo = models.ImageField(
+        upload_to="images/community/logos/", null=True, blank=True)
     banner = models.ImageField(
         upload_to="images/community/banners/", null=True, blank=True
     )
@@ -192,16 +204,21 @@ class Community(models.Model):
         blank=True, default=0
     )  # TODO: Update this automatically
     website = models.URLField(null=True, blank=True)
-    facebook = models.URLField(null=True, blank=True, validators=[validation_facebook])
-    linkedin = models.URLField(null=True, blank=True, validators=[validation_linkedin])
-    twitter = models.URLField(null=True, blank=True, validators=[validation_twitter])
+    facebook = models.URLField(
+        null=True, blank=True, validators=[validation_facebook])
+    linkedin = models.URLField(
+        null=True, blank=True, validators=[validation_linkedin])
+    twitter = models.URLField(null=True, blank=True,
+                              validators=[validation_twitter])
     instagram = models.URLField(
         null=True, blank=True, validators=[validation_instagram]
     )
-    discord = models.URLField(null=True, blank=True, validators=[validation_discord])
+    discord = models.URLField(null=True, blank=True,
+                              validators=[validation_discord])
     is_active = models.BooleanField(default=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
-    followers = models.ManyToManyField(User, related_name="communities", blank=True)
+    followers = models.ManyToManyField(
+        User, related_name="communities", blank=True)
     leader = models.ForeignKey(User, on_delete=models.CASCADE)
     core_members = models.ManyToManyField(
         User, related_name="communities_core_members", blank=True
@@ -217,7 +234,8 @@ class Community(models.Model):
 class Sponsor(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    logo = models.ImageField(upload_to="images/sponsor/logos/", null=True, blank=True)
+    logo = models.ImageField(
+        upload_to="images/sponsor/logos/", null=True, blank=True)
     banner = models.ImageField(
         upload_to="images/community/banners/", null=True, blank=True
     )
@@ -227,14 +245,17 @@ class Sponsor(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+
 MODELS = [obj for name, obj in
-    inspect.getmembers(sys.modules[__name__], inspect.isclass)]
+          inspect.getmembers(sys.modules[__name__], inspect.isclass)]
+
 
 def validate_model(sender, instance, **kwargs):
     if 'raw' in kwargs and not kwargs['raw']:
         if type(instance) in MODELS:
             instance.full_clean()
+
 
 pre_save.connect(validate_model, dispatch_uid='validate_models')
 
