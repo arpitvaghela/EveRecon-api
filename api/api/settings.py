@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,11 +46,9 @@ INSTALLED_APPS = [
 
 GRAPHENE = {
     "SCHEMA": "api.schema.schema",
-    'SCHEMA_OUTPUT': 'data/schema.json',  # defaults to schema.json,
-    'SCHEMA_INDENT': 2,
-    "MIDDLEWARE": [
-        'graphql_jwt.middleware.JSONWebTokenMiddleware'
-    ]
+    "SCHEMA_OUTPUT": "data/schema.json",  # defaults to schema.json,
+    "SCHEMA_INDENT": 2,
+    "MIDDLEWARE": ["graphql_jwt.middleware.JSONWebTokenMiddleware"],
 }
 
 GRAPHQL_JWT = {
@@ -76,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -144,7 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+CORS_ORIGIN_ALLOW_ALL = True
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
