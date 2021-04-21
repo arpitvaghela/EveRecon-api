@@ -303,3 +303,4 @@ class Mutation(graphene.ObjectType):
     remove_volunteer = RemoveVolunteer.Field()
     add_follower = AddFollower.Field()
     remove_follower = RemoveFollower.Field()
+    update_communityimage = UpdateCommunityImages.Field()

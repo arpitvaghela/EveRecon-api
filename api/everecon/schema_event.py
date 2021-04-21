@@ -291,3 +291,4 @@ class Mutation(graphene.ObjectType):
     register_event = Register4Event.Field()
     add_speaker = AddSpeaker.Field()
     remove_speaker = RemoveSpeaker.Field()
+    update_eventimage = UpdateEventImage.Field()
