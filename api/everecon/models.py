@@ -4,6 +4,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.db.models.signals import pre_save
+import inspect
+import sys
+
 
 
 # Validation for facebook handle URL
@@ -223,6 +227,16 @@ class Sponsor(models.Model):
 
     def __str__(self):
         return self.name
+    
+MODELS = [obj for name, obj in
+    inspect.getmembers(sys.modules[__name__], inspect.isclass)]
+
+def validate_model(sender, instance, **kwargs):
+    if 'raw' in kwargs and not kwargs['raw']:
+        if type(instance) in MODELS:
+            instance.full_clean()
+
+pre_save.connect(validate_model, dispatch_uid='validate_models')
 
 
 # class CommunityLeader(models.Model):
