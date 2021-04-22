@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     "everecon",
+#    "django_nose",  
 ]
 
 GRAPHENE = {
@@ -109,7 +110,7 @@ if os.getenv("GITHUB_WORKFLOW"):
             "ENGINE": "django.db.backends.postgresql",
             "NAME": "github-actions",
             "USER": "postgres",
-            "PASSWORD": "postgres",
+#            "PASSWORD": "postgres",
             "HOST": "localhost",
             "PORT": "5432",
         }
@@ -166,3 +167,4 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 STATIC_URL = "/static/"
+
