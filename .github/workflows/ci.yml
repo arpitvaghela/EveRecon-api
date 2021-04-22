@@ -13,7 +13,7 @@ jobs:
       uses: yashrajkakkad/django-coveragepy-github-action@0.2
 #      working-directory: ./api
       with:
-        django-app: 'api'
+        django-app: 'everecon'
 
 #       - uses: actions/checkout@v2
 #       - name: Set up Python
