@@ -2,7 +2,6 @@
 # This is a test CI file to be updated as required
 #
 name: test
-working-directory: ./api
 on: [push, pull_request, workflow_dispatch]
 jobs:
   test:
