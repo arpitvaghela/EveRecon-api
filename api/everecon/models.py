@@ -285,11 +285,11 @@ class Community(models.Model):
         return self.name
 
 
-@receiver(post_save, sender=Community)
-def save_user_profile(sender, instance, **kwargs):
-    instance: Community
-    instance.members_count = instance.members_count+1
-    instance.save()
+# @receiver(post_save, sender=Community)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance: Community
+#     instance.members_count = instance.members_count+1
+#     instance.save()
 
 
 class Sponsor(models.Model):

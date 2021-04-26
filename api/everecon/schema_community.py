@@ -247,8 +247,8 @@ class UpdateCommunityLogo(graphene.Mutation):
         files = info.context.FILES
         community: Community
         community = Community.objects.get(id=id)
-        if files["logo"]:
-            community.logo = files["logo"]
+        print(community)
+        community.logo = files["file"]
         community.save()
         community = Community.objects.get(id=id)
         return UpdateCommunityLogo(success=True, logo=community.logo)
@@ -268,8 +268,8 @@ class UpdateCommunityBanner(graphene.Mutation):
         files = info.context.FILES
         community: Community
         community = Community.objects.get(id=id)
-        if files["banner"]:
-            community.banner = files["banner"]
+        print(community)
+        community.banner = files["file"]
         community.save()
         community = Community.objects.get(id=id)
         return UpdateCommunityBanner(success=True, banner=community.banner)
