@@ -233,7 +233,7 @@ class RemoveFollower(graphene.Mutation):
         return RemoveFollower(ok=True)
 
 
-class UpdateCommunityImages(graphene.Mutation):
+class UpdateCommunityLogo(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
 
@@ -241,7 +241,6 @@ class UpdateCommunityImages(graphene.Mutation):
      # your return fields
     success = graphene.String()
     logo = graphene.String()
-    banner = graphene.String()
 
     def mutate(self,  info, id, *args, **kwargs):
         # When using it in Django, context will be the request
@@ -250,11 +249,30 @@ class UpdateCommunityImages(graphene.Mutation):
         community = Community.objects.get(id=id)
         if files["logo"]:
             community.logo = files["logo"]
+        community.save()
+        community = Community.objects.get(id=id)
+        return UpdateCommunityLogo(success=True, logo=community.logo)
+
+
+class UpdateCommunityBanner(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+        # nothing needed for uploading file
+     # your return fields
+    success = graphene.String()
+    banner = graphene.String()
+
+    def mutate(self,  info, id, *args, **kwargs):
+        # When using it in Django, context will be the request
+        files = info.context.FILES
+        community: Community
+        community = Community.objects.get(id=id)
         if files["banner"]:
             community.banner = files["banner"]
         community.save()
         community = Community.objects.get(id=id)
-        return UpdateCommunityImages(success=True, logo=community.logo, banner=community.banner)
+        return UpdateCommunityBanner(success=True, banner=community.banner)
 
 
 # Query Class
@@ -303,4 +321,5 @@ class Mutation(graphene.ObjectType):
     remove_volunteer = RemoveVolunteer.Field()
     add_follower = AddFollower.Field()
     remove_follower = RemoveFollower.Field()
-    update_communityimage = UpdateCommunityImages.Field()
+    update_communitylogo = UpdateCommunityLogo.Field()
+    update_communitybanner = UpdateCommunityBanner.Field()
