@@ -332,6 +332,29 @@
               }
             },
             {
+              "args": [
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "username",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                }
+              ],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "userByName",
+              "type": {
+                "kind": "OBJECT",
+                "name": "UserType",
+                "ofType": null
+              }
+            },
+            {
               "args": [],
               "deprecationReason": null,
               "description": null,
@@ -1253,7 +1276,7 @@
               "name": "profile",
               "type": {
                 "kind": "OBJECT",
-                "name": "UserProfile",
+                "name": "ProfileType",
                 "ofType": null
               }
             },
@@ -1496,7 +1519,7 @@
           "inputFields": null,
           "interfaces": [],
           "kind": "OBJECT",
-          "name": "UserProfile",
+          "name": "ProfileType",
           "possibleTypes": null
         },
         {
@@ -3144,10 +3167,33 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
-              "name": "updateCommunityimage",
+              "name": "updateCommunitylogo",
               "type": {
                 "kind": "OBJECT",
-                "name": "UpdateCommunityImages",
+                "name": "UpdateCommunityLogo",
+                "ofType": null
+              }
+            },
+            {
+              "args": [
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "id",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "ID",
+                    "ofType": null
+                  }
+                }
+              ],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "updateCommunitybanner",
+              "type": {
+                "kind": "OBJECT",
+                "name": "UpdateCommunityBanner",
                 "ofType": null
               }
             },
@@ -3276,6 +3322,49 @@
               "type": {
                 "kind": "OBJECT",
                 "name": "UpdateProfilePicture",
+                "ofType": null
+              }
+            },
+            {
+              "args": [
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "city",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "contact",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "country",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                }
+              ],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "updateUser",
+              "type": {
+                "kind": "OBJECT",
+                "name": "UpdateProfile",
                 "ofType": null
               }
             },
@@ -4000,6 +4089,29 @@
                 "name": "String",
                 "ofType": null
               }
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "kind": "OBJECT",
+          "name": "UpdateCommunityLogo",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": [
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "success",
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             {
               "args": [],
@@ -4017,7 +4129,7 @@
           "inputFields": null,
           "interfaces": [],
           "kind": "OBJECT",
-          "name": "UpdateCommunityImages",
+          "name": "UpdateCommunityBanner",
           "possibleTypes": null
         },
         {
@@ -4044,7 +4156,7 @@
               "name": "profile",
               "type": {
                 "kind": "OBJECT",
-                "name": "UserProfile",
+                "name": "ProfileType",
                 "ofType": null
               }
             },
@@ -4112,6 +4224,41 @@
           "interfaces": [],
           "kind": "OBJECT",
           "name": "UpdateProfilePicture",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": [
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "profile",
+              "type": {
+                "kind": "OBJECT",
+                "name": "ProfileType",
+                "ofType": null
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "user",
+              "type": {
+                "kind": "OBJECT",
+                "name": "UserType",
+                "ofType": null
+              }
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "kind": "OBJECT",
+          "name": "UpdateProfile",
           "possibleTypes": null
         },
         {

@@ -24,17 +24,16 @@ class UserType(DjangoObjectType):
         model = get_user_model()
 
 
-class UserProfile(DjangoObjectType):
+class ProfileType(DjangoObjectType):
     class Meta:
         model = Profile
-
 
 # CreateUser
 
 
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
-    profile = graphene.Field(UserProfile)
+    profile = graphene.Field(ProfileType)
     token = graphene.String()
     refresh_token = graphene.String()
 
@@ -95,9 +94,30 @@ class UpdateProfilePicture(graphene.Mutation):
 # Finalize creating mutation for schema
 
 
+class UpdateProfile(graphene.Mutation):
+    class Arguments:
+        contact = graphene.String()
+        city = graphene.String()
+        country = graphene.String()
+
+    profile = graphene.Field(ProfileType)
+    user = graphene.Field(UserType)
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(self, info, **kwargs):
+        user = info.context.user
+        profile_obj = user.profile
+        for i in kwargs.keys():
+            setattr(profile_obj, i, kwargs[i])
+        profile_obj.save()
+        profile_obj = User.objects.get(id=user.id).profile
+        return UpdateProfile(profile=profile_obj, user=user)
+
+
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     update_profpic = UpdateProfilePicture.Field()
+    update_user = UpdateProfile.Field()
 
 
 # Query: Find users / my own profile
@@ -108,6 +128,7 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.ObjectType):
     whoami = graphene.Field(UserType)
     myprofile = graphene.Field(UserType)
+    user_by_name = graphene.Field(UserType, username=graphene.String())
     # users = graphene.List(UserType)
 
     @permissions_checker([IsAuthenticated])
@@ -121,6 +142,12 @@ class Query(graphene.ObjectType):
         user = info.context.user
         # Check to to ensure you're signed-in to see yourself
         return user
+
+    # @permissions_checker([IsAuthenticated])
+    def resolve_user_by_name(self, info, username):
+        user = User.objects.get(username=username)
+        return user
+
     # def resolve_users(self, info):
     #     user = info.context.user
     #     print(user)
