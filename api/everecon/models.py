@@ -2,11 +2,11 @@ from uuid import uuid4
 import os
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save, m2m_changed
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
-from django.db.models.signals import pre_save
 import inspect
 import sys
 
@@ -63,6 +63,14 @@ def validation_youtube(youtube):
     url_validator = RegexValidator(
         regex=youtube_regex, message=url_validator_message)
     return url_validator(youtube)
+
+
+# Validation for mobile number
+def validation_mobile(mobile):
+    mobile_validator_message = "Invalid mobile number!"
+    mobile_regex = "^(\+\d{1,3}[- ]?)?\d{10}$"
+    mobile_validator = RegexValidator(regex=mobile_regex, message=mobile_validator_message)
+    return mobile_validator(mobile)
 
 
 def path_and_rename_profile(instance, filename):
@@ -136,7 +144,7 @@ def path_and_rename_communitybanner(instance, filename):
 
 
 class Profile(models.Model):
-    contact = models.CharField(max_length=15, null=True, blank=True)
+    contact = models.CharField(max_length=15, null=True, blank=True, validators=[validation_mobile])
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     profile_picture = models.ImageField(
@@ -220,19 +228,25 @@ class Event(models.Model):
         return self.name
 
 
+@receiver(post_save, sender=Event)
+def event_time(sender, instance, *args, **kwargs):
+    if instance.start_time >= instance.end_time:
+        ValidationError("Event start-time cannot be greater than end-time")
+
+
 class Speaker(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField()
-    facebook = models.URLField()
-    instagram = models.URLField()
+    facebook = models.URLField(validators=[validation_facebook])
+    instagram = models.URLField(validators=[validation_instagram])
     profile_picture = models.ImageField(
         upload_to=path_and_rename_profile, blank=True, null=True
     )
     description = models.TextField()
 
     def __str__(self):
-        return self.name
+        return self.first_name
 
 
 class Community(models.Model):
@@ -285,6 +299,42 @@ class Community(models.Model):
         return self.name
 
 
+@receiver(m2m_changed, sender=Community.core_members.through)
+def core_member_role_dependencies(sender, action, pk_set, instance, *args, **kwargs):
+    volunteers = []
+    for user in instance.volunteers.all():
+        volunteers.append(User.objects.get(id=user.id))
+
+    if action == "pre_add":
+        for member in pk_set:
+            core_member = User.objects.get(id=member)
+            leader = User.objects.get(id=instance.leader.id)
+            print(volunteers)
+            print(core_member)
+            if leader == core_member:
+                ValidationError("Core member cannot be a leader")
+            elif core_member in volunteers:
+                ValidationError("Core member cannot be a volunteer")
+
+
+@receiver(m2m_changed, sender=Community.volunteers.through)
+def volunteer_role_dependencies(sender, action, pk_set, instance, *args, **kwargs):
+    core_members = []
+    for user in instance.core_members.all():
+        core_members.append(user)
+
+    if action == "pre_add":
+        for member in pk_set:
+            volunteer = User.objects.get(id=member)
+            leader = User.objects.get(id=instance.leader.id)
+            print(volunteer, leader)
+            print(core_members)
+            if leader == volunteer:
+                raise ValidationError("Volunteer cannot be a leader")
+            elif volunteer in core_members:
+                raise ValidationError("Volunteer cannot be a core_member")
+
+
 # @receiver(post_save, sender=Community)
 # def save_user_profile(sender, instance, **kwargs):
 #     instance: Community
@@ -319,7 +369,6 @@ def validate_model(sender, instance, **kwargs):
 
 
 pre_save.connect(validate_model, dispatch_uid='validate_models')
-
 
 # class CommunityLeader(models.Model):
 #     creation_time = models.TimeField(auto_now_add=True, blank=True)
