@@ -69,6 +69,21 @@ class Register4Event(graphene.Mutation):
         return Register4Event(event=event)
 
 
+class UnRegister4Event(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    event = graphene.Field(EventType)
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(root, info, **kwargs):
+        id = kwargs.pop("id")
+        user = info.context.user
+        Event.objects.get(id=id).attendees.remove(user)
+        event = Event.objects.get(id=id)
+        return UnRegister4Event(event=event)
+
+
 class Checkin4Event(graphene.Mutation):
     class Arguments:
         eventid = graphene.ID(required=True)
@@ -289,6 +304,7 @@ class Mutation(graphene.ObjectType):
     checkin_event = Checkin4Event.Field()
     uncheckin_event = Uncheck4Event.Field()
     register_event = Register4Event.Field()
+    unregister_event = UnRegister4Event.Field()
     add_speaker = AddSpeaker.Field()
     remove_speaker = RemoveSpeaker.Field()
     update_eventimage = UpdateEventImage.Field()
