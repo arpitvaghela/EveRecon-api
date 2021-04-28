@@ -109,7 +109,7 @@ class Uncheck4Event(graphene.Mutation):
         event = Event.objects.get(id=eventid)
         # user = User.objects.get(kwargs.get(''))
         event.checkins.remove(user)
-        return RemoveSpeaker(ok=True, message="Checkin removed")
+        return Uncheck4Event(ok=True, message="Checkin removed")
 
 
 class AddSpeaker(graphene.Mutation):
