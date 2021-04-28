@@ -123,10 +123,30 @@ class UpdateProfile(graphene.Mutation):
         return UpdateProfile(profile=profile_obj, user=user)
 
 
+class UpdateUserSecurity(graphene.Mutation):
+    class Arguments:
+        email = graphene.String()
+        password = graphene.String()
+    user = graphene.Field(UserType)
+
+    @permissions_checker([IsAuthenticated])
+    def mutate(self, info, **kwargs):
+        user = info.context.user
+        email = kwargs.pop("email")
+        pwd = kwargs.pop("password")
+        user: User
+        user.email = email
+        user.set_password(pwd)
+        user.save()
+        user = user.objects.get(id=user.id)
+        return UpdateUserSecurity(user=user)
+
+
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     update_profpic = UpdateProfilePicture.Field()
     update_user = UpdateProfile.Field()
+    update_usersecurity = UpdateUserSecurity.Field()
 
 
 # Query: Find users / my own profile
