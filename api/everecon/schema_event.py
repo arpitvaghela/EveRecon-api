@@ -90,7 +90,7 @@ class Checkin4Event(graphene.Mutation):
         else:
             ok = False
             message = "User hasn't registered for event"
-        return Checkin4Event(ok=ok,)
+        return Checkin4Event(ok=ok, message=message)
 
 
 class Uncheck4Event(graphene.Mutation):
