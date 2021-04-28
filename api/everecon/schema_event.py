@@ -82,8 +82,8 @@ class Checkin4Event(graphene.Mutation):
         eventid = kwargs.pop("eventid")
         userid = kwargs.pop("userid")
         user = User.objects.get(id=userid)
-        attends = Event.objects.get(id=eventid).attendees
-        if user.id in attends:
+        attends = Event.objects.get(id=eventid).attendees.all()
+        if user in attends:
             Event.objects.get(id=eventid).checkins.add(user)
             ok = True
             message = "Successfully Checkedin"
