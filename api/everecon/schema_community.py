@@ -14,6 +14,31 @@ from random import sample
 
 # Object types
 class CommunityType(DjangoObjectType):
+    isfollower = graphene.Boolean()
+    iscore = graphene.Boolean()
+    isvolunteer = graphene.Boolean()
+
+    def resolve_isfollower(parent, info):
+        user = info.context.user
+        if user in parent.followers.all():
+            return True
+        else:
+            return False
+
+    def resolve_iscore(parent, info):
+        user = info.context.user
+        if user in parent.core_members.all() or user.id == parent.leader.id:
+            return True
+        else:
+            return False
+
+    def resolve_isvolunteer(parent, info):
+        user = info.context.user
+        if user in parent.volunteers.all():
+            return True
+        else:
+            return False
+
     class Meta:
         model = Community
 
