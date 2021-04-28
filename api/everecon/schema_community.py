@@ -44,6 +44,43 @@ class CommunityType(DjangoObjectType):
 
 
 class EventType(DjangoObjectType):
+    iscore = graphene.Boolean()
+    isvolunteer = graphene.Boolean()
+    isregistered = graphene.Boolean()
+    ischeckedin = graphene.Boolean()
+
+    def resolve_iscore(parent, info):
+        user = info.context.user
+        parent: Event
+        if user in parent.community.core_members.all() or user.id == parent.community.leader.id:
+            return True
+        else:
+            return False
+
+    def resolve_isvolunteer(parent, info):
+        user = info.context.user
+        parent: Event
+        if user in parent.community.volunteers.all():
+            return True
+        else:
+            return False
+
+    def resolve_isregistered(parent, info):
+        user = info.context.user
+        parent: Event
+        if user in parent.attendees.all():
+            return True
+        else:
+            return False
+
+    def resolve_ischeckedin(parent, info):
+        user = info.context.user
+        parent: Event
+        if user in parent.checkins.all():
+            return True
+        else:
+            return False
+
     class Meta:
         model = Event
 
