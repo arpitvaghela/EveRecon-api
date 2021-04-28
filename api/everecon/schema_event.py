@@ -105,7 +105,7 @@ class Uncheck4Event(graphene.Mutation):
     def mutate(root, info, *args, **kwargs):
         eventid = kwargs.pop("eventid")
         userid = kwargs.pop("userid")
-        user = User.objects.get(userid)
+        user = User.objects.get(id=userid)
         event = Event.objects.get(id=eventid)
         # user = User.objects.get(kwargs.get(''))
         event.checkins.remove(user)
