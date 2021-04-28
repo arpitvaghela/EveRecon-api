@@ -96,6 +96,8 @@ class UpdateProfilePicture(graphene.Mutation):
 
 class UpdateProfile(graphene.Mutation):
     class Arguments:
+        firstname = graphene.String()
+        lastname = graphene.String()
         contact = graphene.String()
         city = graphene.String()
         country = graphene.String()
@@ -107,10 +109,17 @@ class UpdateProfile(graphene.Mutation):
     def mutate(self, info, **kwargs):
         user = info.context.user
         profile_obj = user.profile
+        fname = kwargs.pop("firstname")
+        lname = kwargs.pop("lastname")
+        user: User
+        user.first_name = fname
+        user.last_name = lname
+        user.save()
         for i in kwargs.keys():
             setattr(profile_obj, i, kwargs[i])
         profile_obj.save()
         profile_obj = User.objects.get(id=user.id).profile
+        user = User.objects.get(id=user.id)
         return UpdateProfile(profile=profile_obj, user=user)
 
 
