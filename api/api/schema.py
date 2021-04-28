@@ -2,7 +2,7 @@ import graphene
 import graphql_jwt
 from everecon import schema_init, schema_users
 from graphene_django import DjangoObjectType
-from everecon import schema_init, schema_users, schema_community, schema_event, schema_speaker
+from everecon import schema_init, schema_users, schema_community, schema_event, schema_speaker, schema_search
 
 
 class Query(schema_init.Query, schema_users.Query,
@@ -13,7 +13,7 @@ class Query(schema_init.Query, schema_users.Query,
 
 class Mutation(schema_users.Mutation, schema_community.Mutation,
                schema_event.Mutation, schema_speaker.Mutation,
-               graphene.ObjectType):
+               schema_search.Mutation, graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     verify_token = graphql_jwt.Verify.Field()
