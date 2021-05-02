@@ -26,10 +26,10 @@ SECRET_KEY = "c+2s%%0i4i+_h$ksu#i9iybc!ny89#&^l61phnh4xxxkphs#*("
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['everecon-api.herokuapp.com']
+ALLOWED_HOSTS = ["everecon-api.herokuapp.com", "127.0.0.1"]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 
 # Application definition
 
@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     "everecon",
-#    "django_nose",  
+    #    "django_nose",
 ]
 
 GRAPHENE = {
@@ -71,6 +71,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -110,8 +111,8 @@ if os.getenv("GITHUB_WORKFLOW"):
             "ENGINE": "django.db.backends.postgresql",
             "NAME": "demo",
             "USER": "ctest",
-#            "PASSWORD": "postgres",
-            "PASSWORD" : "coveragetest123",
+            #            "PASSWORD": "postgres",
+            "PASSWORD": "coveragetest123",
             "HOST": "localhost",
             "PORT": "5432",
         }
@@ -168,4 +169,3 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 STATIC_URL = "/static/"
-
