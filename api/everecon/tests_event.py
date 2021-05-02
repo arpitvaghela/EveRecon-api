@@ -737,3 +737,50 @@ class EveReconTest(JSONWebTokenTestCase):
 
         response = self.client.execute(create_event_time, variables)
         self.assertIn('errors', response.to_dict())
+
+    # Facebook validation test in createSpeaker
+    def test_create_speaker_facebook_validation(self):
+        create_speaker_facebook = '''
+            mutation createSpeaker ($description: String, $email: String, $facebook: String, $firstName: String!, $instagram: String, $lastName: String) {
+                createSpeaker (description: $description, email: $email, facebook: $facebook, firstName: $firstName, instagram: $instagram, lastName: $lastName) {
+                    speaker {
+                        facebook
+                    }
+                }
+            }
+            '''
+
+        variables = {
+            "description": "Test_Description",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebk.com/mrparth23/",
+            "firstName": "Test_firstname",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "lastName": "Test_lastname"
+        }
+
+        response = self.client.execute(create_speaker_facebook, variables)
+        self.assertIn('errors', response.to_dict())
+
+    # Instagram validation test in createSpeaker
+    def test_create_speaker_instagram_validation(self):
+        create_speaker_instagram = '''
+            mutation createSpeaker ($description: String, $email: String, $facebook: String, $firstName: String!, $instagram: String, $lastName: String) {
+                createSpeaker (description: $description, email: $email, facebook: $facebook, firstName: $firstName, instagram: $instagram, lastName: $lastName) {
+                    speaker {
+                        instagram
+                    }
+                }
+            }
+            '''
+
+        variables = {
+            "description": "Test_Description",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mrparth23/",
+            "firstName": "Test_firstname",
+            "instagram": "https://www.instam.com/mr.parth23/",
+            "lastName": "Test_lastname"
+        }
+        response = self.client.execute(create_speaker_instagram, variables)
+        self.assertIn('errors', response.to_dict())

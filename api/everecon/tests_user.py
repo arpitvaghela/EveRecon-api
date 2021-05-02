@@ -414,7 +414,7 @@ class EveReconTest(JSONWebTokenTestCase):
             pass
 
     # Contact validation test in createUser
-    def test_create_community_contact_validation(self):
+    def test_create_user_contact_validation(self):
         create_user_contact = '''
                 mutation createUser ($city: String, $contact: String, $country: String, $email: String!, $firstname: String, $lastname: String, $password: String!, $username: String!) {
                     createUser (city: $city, contact: $contact, country: $country, email: $email, firstname: $firstname, lastname: $lastname, password: $password, username: $username) {
