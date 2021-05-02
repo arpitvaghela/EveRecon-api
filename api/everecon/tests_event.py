@@ -1,15 +1,14 @@
+import time
 from django.utils import dateparse
-from django.utils import timezone
-from datetime import datetime
 from .models import *
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 import pytz
-import warnings
+import sys
 
-# warnings.filterwarnings("ignore")
+sys.tracebacklimit = 0
 
 GraphQLTestCase.GRAPHQL_URL = "http://127.0.0.1:8000/graphql/"
 print(GraphQLTestCase.GRAPHQL_URL)
@@ -24,7 +23,7 @@ class EveReconTest(JSONWebTokenTestCase):
         global id
         user = User.objects.create(
             username="Test_username_" + str(id),
-            password = "Test@10",
+            password="Test_password@" + str(id),
             email="test@gmail.com",
         )
         user.set_password("Test_password")
@@ -54,8 +53,11 @@ class EveReconTest(JSONWebTokenTestCase):
     def create_dummy_event(self):
         community = self.create_dummy_community()
         category = self.create_dummy_category()
-        # date_time = datetime.now()
-        date_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+
+        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        time.sleep(2)
+        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+
         event = Event.objects.create(
             name="Test_event",
             address="Test_address",
@@ -64,11 +66,11 @@ class EveReconTest(JSONWebTokenTestCase):
             community=community,
             country="Test_country",
             description="Test_description",
-            end_time=date_time,
+            end_time=end_time,
             kind="V",
             live_URL="https://github.com/arpitvaghela/EveRecon-api",
             max_RSVP=50,
-            start_time=date_time
+            start_time=start_time
         )
         return event
 
@@ -83,10 +85,14 @@ class EveReconTest(JSONWebTokenTestCase):
         )
 
     def create_dummy_category(self):
-        return Category.objects.create(name="Test_category")
+        global id
+        category = Category.objects.create(name="Test_category_" + str(id))
+        category.save()
+        id += 1
+        return category
 
     def setUp(self):
-        self.user = get_user_model().objects.create(username='test',password="Test@10")
+        self.user = get_user_model().objects.create(username='test', password="Test@10")
         self.client.authenticate(self.user)
 
     # Create Event
@@ -94,8 +100,9 @@ class EveReconTest(JSONWebTokenTestCase):
         community = self.create_dummy_community()
         category = self.create_dummy_category()
 
-        # date_time = timezone.now()
-        date_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        time.sleep(1)
+        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
 
         create_event = '''
         mutation createEvent ($address: String, $category: ID!, $city: String, $community: ID, $country: String, $description: String!, $endTime: DateTime!, $kind: String!, $liveUrl: String, $maxRsvp: Int, $name: String!, $startTime: DateTime!, $tags: [String]) {
@@ -136,8 +143,8 @@ class EveReconTest(JSONWebTokenTestCase):
             "liveUrl": "https://github.com/arpitvaghela/EveRecon-api",
             "maxRsvp": 50,
             "name": "Test_event",
-            "startTime": date_time,
-            "endTime": date_time,
+            "startTime": start_time,
+            "endTime": end_time,
             "tags": ["Test_tag1", "Test_tag2", "Test_tag3"]
         }
 
@@ -166,6 +173,7 @@ class EveReconTest(JSONWebTokenTestCase):
         }}
 
         response = self.client.execute(create_event, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         content['event']['startTime'] = dateparse.parse_datetime(content['event']["startTime"])
         content['event']['endTime'] = dateparse.parse_datetime(content['event']["endTime"])
@@ -177,8 +185,9 @@ class EveReconTest(JSONWebTokenTestCase):
         community = Community.objects.get(id=event.community.id)
         category = Category.objects.get(id=event.category.id)
 
-        # date_time = timezone.now()
-        date_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        time.sleep(1)
+        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
 
         update_event = '''
         mutation updateEvent ($address: String, $category: ID, $city: String, $country: String, $description: String, $endTime: DateTime, $id: ID!, $kind: String, $liveUrl: String, $maxRsvp: Int, $name: String, $startTime: DateTime, $tags: [String]) {
@@ -221,8 +230,8 @@ class EveReconTest(JSONWebTokenTestCase):
             "id": event.id,
             "name": "Test_event",
             "tags": ["Test_tag1", "Test_tag2", "Test_tag3"],
-            "startTime": date_time,
-            "endTime": date_time,
+            "startTime": start_time,
+            "endTime": end_time,
         }
 
         tags = []
@@ -250,6 +259,7 @@ class EveReconTest(JSONWebTokenTestCase):
         }}
 
         response = self.client.execute(update_event, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         content['event']['startTime'] = dateparse.parse_datetime(content['event']["startTime"])
         content['event']['endTime'] = dateparse.parse_datetime(content['event']["endTime"])
@@ -274,6 +284,7 @@ class EveReconTest(JSONWebTokenTestCase):
         data = {"ok": True}
 
         response = self.client.execute(delete_event, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -285,8 +296,14 @@ class EveReconTest(JSONWebTokenTestCase):
         mutation registerEvent ($id: ID!) {
             registerEvent (id: $id) {
                 event {
+                    id
                     name
-                }  
+                    community {
+                        id
+                        name
+                        description
+                    } 
+                }
             }
         }
         '''
@@ -295,11 +312,18 @@ class EveReconTest(JSONWebTokenTestCase):
             "id": event.id
         }
 
-        data = {"event": {
-            "name": event.name
+        data = {'event': {
+            'id': str(event.id),
+            'name': event.name,
+            'community': {
+                'id': str(event.community.id),
+                'name': event.community.name,
+                'description': event.community.description
+            }
         }}
 
         response = self.client.execute(register_event, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -323,35 +347,7 @@ class EveReconTest(JSONWebTokenTestCase):
         }
 
         response = self.client.execute(event_by_id, variables)
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # All events
-    def test_events(self):
-        events = []
-        for i in range(0, 3):
-            event = self.create_dummy_event()
-            js = {"name": event.name, "description": event.description, "kind": event.kind,
-                  "address": event.address, "category": {"id": str(event.category.id)}}
-            events.append(js)
-
-        all_events = '''
-            query events {
-                events {
-                    name
-                    description
-                    kind
-                    address
-                    category {
-                        id
-                    }                        
-                }
-            }
-        '''
-
-        data = events
-
-        response = self.client.execute(all_events)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -391,6 +387,7 @@ class EveReconTest(JSONWebTokenTestCase):
         }}
 
         response = self.client.execute(create_speaker, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -414,6 +411,7 @@ class EveReconTest(JSONWebTokenTestCase):
 
         data = {"ok": True}
         response = self.client.execute(add_speaker, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -437,6 +435,7 @@ class EveReconTest(JSONWebTokenTestCase):
 
         data = {"ok": True}
         response = self.client.execute(remove_speaker, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -466,6 +465,7 @@ class EveReconTest(JSONWebTokenTestCase):
         }
 
         response = self.client.execute(speaker_by_email, variables)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
@@ -489,5 +489,251 @@ class EveReconTest(JSONWebTokenTestCase):
 
         data = speaker
         response = self.client.execute(all_speaker)
+        self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
+
+    # All category
+    def test_all_category(self):
+        category = []
+        for i in range(0, 5):
+            cat = self.create_dummy_category()
+            category.append({'id': str(cat.id), 'name': cat.name})
+
+        all_category = '''
+        query categories{
+            categories{
+                id
+                name
+            }
+        }
+        '''
+        data = category
+        response = self.client.execute(all_category)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
+    # Events of community
+    def test_events_of_community(self):
+        event = self.create_dummy_event()
+
+        events_of_community = '''
+        query communityById ($id: ID) {
+            communityById (id: $id) {
+                id
+                name
+                description
+                email
+                events {
+                    id
+                    name
+                    description
+                }
+            }
+        }
+        '''
+        variables = {
+            "id": event.community.id
+        }
+
+        data = {
+            'id': str(event.community.id),
+            'name': event.community.name,
+            'description': event.community.description,
+            'email': event.community.email,
+            'events': [{'id': str(event.id), 'name': event.name, 'description': event.description}]
+        }
+        response = self.client.execute(events_of_community, variables)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
+    # check-in event
+    def test_checkin_event(self):
+        event = self.create_dummy_event()
+        user = self.create_dummy_user()
+        self.client.authenticate(user)
+
+        register = '''
+        mutation registerEvent ($id: ID!) {
+            registerEvent (id: $id) {
+                event{
+                    id
+                }
+        }
+        }
+        '''
+        variables_register = {
+            'id': event.id
+        }
+        output = self.client.execute(register, variables_register)
+
+        # check-in
+        checkin_event = '''
+            mutation checkinEvent ($eventid: ID!, $userid: ID!) {
+                checkinEvent (eventid: $eventid, userid: $userid) {
+                    ok
+                    message
+                }
+            }
+        '''
+
+        variables_check_in = {
+            'eventid': event.id,
+            'userid': user.id
+        }
+
+        data_check_in = {'ok': True, 'message': 'Successfully Checkedin'}
+
+        response_check_in = self.client.execute(checkin_event, variables_check_in)
+        self.assertNotIn('errors', response_check_in.to_dict())
+        content_check_in = list(response_check_in.data.items())[0][1]
+        self.assertEquals(content_check_in, data_check_in)
+
+        # uncheck-in
+        uncheckin_event = '''
+        mutation uncheckinEvent ($eventid: ID!, $userid: String!) {
+            uncheckinEvent (eventid: $eventid, userid: $userid) {
+                ok
+                message
+            }
+        }
+        '''
+        variables_uncheck_in = {
+            'eventid': event.id,
+            'userid': user.id
+        }
+        data_uncheck_in = {'ok': True, 'message': 'Checkin removed'}
+
+        response_uncheck_in = self.client.execute(uncheckin_event, variables_uncheck_in)
+        self.assertNotIn('errors', response_uncheck_in.to_dict())
+        content_uncheck_in = list(response_uncheck_in.data.items())[0][1]
+        self.assertEquals(content_uncheck_in, data_uncheck_in)
+
+    # View Event RSVP
+    def test_view_event_RSVP(self):
+        event = self.create_dummy_event()
+        users = []
+        for i in range(0, 5):
+            use = self.create_dummy_user()
+            self.client.authenticate(use)
+            register_event = '''
+                mutation registerEvent ($id: ID!) {
+                    registerEvent (id: $id) {
+                        event {
+                            id
+                        }
+                    }
+                }
+                '''
+            variables = {
+                'id': event.id
+            }
+            self.client.execute(register_event, variables)
+            users.append({'id': str(use.id), 'username': use.username, 'email': use.email})
+
+        event_RSVP = '''
+            query eventById ($id: ID) {
+                eventById (id: $id) {
+                    attendees {
+                        id
+                        username
+                        email
+                    }
+                }
+            }
+            '''
+        var = {
+            'id': event.id
+        }
+
+        data = {
+            'attendees': users
+        }
+
+        response = self.client.execute(event_RSVP, var)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
+    # My Registered Event
+    def test_my_event(self):
+        myprofile = self.create_dummy_user()
+        self.client.authenticate(myprofile)
+        event = []
+        eve = self.create_dummy_event()
+        event.append({'id': str(eve.id), 'name': eve.name, 'description': eve.description})
+
+        register_event = '''
+            mutation registerEvent ($id: ID!) {
+                registerEvent (id: $id) {
+                    event {
+                        id
+                    }
+                }
+            }
+            '''
+        variables = {
+            'id': eve.id
+        }
+
+        self.client.execute(register_event, variables)
+
+        event_registered = '''
+            query myprofile {
+                myprofile {
+                    eventsAttended {
+                        id
+                        name
+                        description
+                    }
+                }
+            }
+            '''
+        data = {
+            'eventsAttended': event
+        }
+
+        response = self.client.execute(event_registered)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.client.execute(event_registered, data)
+
+    # Event time validation test in createEvent
+    def test_create_event_time_validation(self):
+        community = self.create_dummy_community()
+        category = self.create_dummy_category()
+
+        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        time.sleep(2)
+        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+
+        create_event_time = '''
+            mutation createEvent ($address: String, $category: ID!, $city: String, $community: ID, $country: String, $description: String!, $endTime: DateTime!, $kind: String!, $liveUrl: String, $maxRsvp: Int, $name: String!, $startTime: DateTime!, $tags: [String]) {
+                createEvent (address: $address, category: $category, city: $city, community: $community, country: $country, description: $description, endTime: $endTime, kind: $kind, liveUrl: $liveUrl, maxRsvp: $maxRsvp, name: $name, startTime: $startTime, tags: $tags) {
+                    event {
+                        name
+                    }
+                }
+            }
+            '''
+
+        variables = {
+            "address": "Test_address",
+            "category": category.id,
+            "city": "Test_city",
+            "community": community.id,
+            "country": "Test_country",
+            "description": "Test_description",
+            "kind": "V",
+            "liveUrl": "https://github.com/arpitvaghela/EveRecon-api",
+            "maxRsvp": 50,
+            "name": "Test_event",
+            "startTime": end_time,
+            "endTime": start_time,
+            "tags": ["Test_tag1", "Test_tag2", "Test_tag3"]
+        }
+
+        response = self.client.execute(create_event_time, variables)
+        self.assertIn('errors', response.to_dict())
