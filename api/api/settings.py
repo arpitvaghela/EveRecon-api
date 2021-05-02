@@ -27,7 +27,7 @@ SECRET_KEY = "c+2s%%0i4i+_h$ksu#i9iybc!ny89#&^l61phnh4xxxkphs#*("
 DEBUG = True
 
 ALLOWED_HOSTS = ["everecon-api.herokuapp.com", "127.0.0.1"]
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
