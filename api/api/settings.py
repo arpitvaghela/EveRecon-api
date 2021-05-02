@@ -117,6 +117,8 @@ if os.getenv("GITHUB_WORKFLOW"):
             "PORT": "5432",
         }
     }
+elif os.getenv(DATABASE_URL):
+    DATABASES["default"] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 else:
     DATABASES = {
         "default": {

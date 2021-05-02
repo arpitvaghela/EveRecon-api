@@ -31,3 +31,4 @@ yarg==0.1.9
 django-cors-headers==3.7.0
 gunicorn
 whitenoise
+dj-database-url
