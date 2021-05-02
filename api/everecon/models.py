@@ -231,7 +231,7 @@ class Event(models.Model):
 @receiver(post_save, sender=Event)
 def event_time(sender, instance, *args, **kwargs):
     if instance.start_time >= instance.end_time:
-        ValidationError("Event start-time cannot be greater than end-time")
+        raise ValidationError("Event start-time cannot be greater than end-time")
 
 
 class Speaker(models.Model):
@@ -270,7 +270,7 @@ class Community(models.Model):
     email = models.EmailField(null=True, blank=True)
     members_count = models.IntegerField(
         blank=True, default=0
-    )  # TODO: Update this automatically
+    )  #TODO: Update this automatically
     website = models.URLField(null=True, blank=True)
     facebook = models.URLField(
         null=True, blank=True, validators=[validation_facebook])
@@ -303,18 +303,16 @@ class Community(models.Model):
 def core_member_role_dependencies(sender, action, pk_set, instance, *args, **kwargs):
     volunteers = []
     for user in instance.volunteers.all():
-        volunteers.append(User.objects.get(id=user.id))
+        volunteers.append(user)
 
     if action == "pre_add":
         for member in pk_set:
             core_member = User.objects.get(id=member)
             leader = User.objects.get(id=instance.leader.id)
-            print(volunteers)
-            print(core_member)
             if leader == core_member:
-                ValidationError("Core member cannot be a leader")
+                raise ValidationError("Core member cannot be a leader")
             elif core_member in volunteers:
-                ValidationError("Core member cannot be a volunteer")
+                raise ValidationError("Core member cannot be a volunteer")
 
 
 @receiver(m2m_changed, sender=Community.volunteers.through)
@@ -327,8 +325,6 @@ def volunteer_role_dependencies(sender, action, pk_set, instance, *args, **kwarg
         for member in pk_set:
             volunteer = User.objects.get(id=member)
             leader = User.objects.get(id=instance.leader.id)
-            print(volunteer, leader)
-            print(core_members)
             if leader == volunteer:
                 raise ValidationError("Volunteer cannot be a leader")
             elif volunteer in core_members:
