@@ -1,8 +1,9 @@
-from .models import Speaker
-from graphene_django import DjangoObjectType
 import graphene
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
+from graphene_django import DjangoObjectType
+
+from .models import Speaker
 
 
 class SpeakerType(DjangoObjectType):

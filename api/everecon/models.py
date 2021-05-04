@@ -1,14 +1,15 @@
-from uuid import uuid4
+import inspect
 import os
+import sys
+from uuid import uuid4
+
 from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import pre_save, post_save, m2m_changed
-from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.db import models
+from django.db.models.signals import m2m_changed, post_save, pre_save
+from django.dispatch import receiver
 from django.utils import timezone
-import inspect
-import sys
 
 
 # Validation for facebook handle URL

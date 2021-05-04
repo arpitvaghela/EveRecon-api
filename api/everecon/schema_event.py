@@ -1,11 +1,14 @@
-from .models import Community, Event, Category, Tag
-from graphene_django import DjangoObjectType
+from random import sample
+
 import graphene
-from .schema_community import CommunityType, EventType, CategoryType, TagType
+from django.contrib.auth.models import User
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
-from django.contrib.auth.models import User
-from random import sample
+from graphene_django import DjangoObjectType
+
+from .email_sendgrid import *
+from .models import Category, Community, Event, Speaker, Tag
+from .schema_community import CategoryType, CommunityType, EventType, TagType
 
 
 class CreateEvent(graphene.Mutation):
@@ -132,14 +135,16 @@ class AddSpeaker(graphene.Mutation):
         eventid = graphene.ID(required=True)
         speakerid = graphene.ID(required=True)
 
-    ok = graphene.Boolean()
+    ok = graphene.Boolean() 
 
     @ permissions_checker([IsAuthenticated])
     def mutate(root, info, eventid, speakerid):
         event = Event.objects.get(id=eventid)
         # user = User.objects.get(kwargs.get(''))
         event.speakers.add(speakerid)
-        return AddSpeaker(ok=True)
+        speaker = Speaker.objects.get(id=speakerid)
+        send_speaker_email(speaker.first_name, speaker.email, event.name, event.id, event.community.name)
+        return AddSpeaker(ok=True)  
 
 
 class RemoveSpeaker(graphene.Mutation):

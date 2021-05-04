@@ -1,9 +1,11 @@
-from .models import *
-from graphene_django.utils.testing import GraphQLTestCase
-from graphql_jwt.testcases import JSONWebTokenTestCase
+import sys
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-import sys
+from graphene_django.utils.testing import GraphQLTestCase
+from graphql_jwt.testcases import JSONWebTokenTestCase
+
+from .models import *
 
 sys.tracebacklimit = 0
 
