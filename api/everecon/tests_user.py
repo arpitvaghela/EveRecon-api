@@ -482,3 +482,29 @@ class EveReconTest(JSONWebTokenTestCase):
         self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
+    
+    # Invalid EmailID in create user
+    def test_create_user(self):
+        create_user_email = '''
+        mutation createUser ($city: String, $contact: String, $country: String, $email: String!, $firstname: String, $lastname: String, $password: String!, $username: String!) {
+            createUser (city: $city, contact: $contact, country: $country, email: $email, firstname: $firstname, lastname: $lastname, password: $password, username: $username) {
+                user {
+                    email
+                }
+            }
+        }
+        '''
+
+        variables = {
+            "city": "Test_city",
+            "contact": "9876543210",
+            "country": "Test_country",
+            "email": "Test_email",
+            "password": "Test_password",
+            "username": "Test_username",
+            "firstname": "Test_firstname",
+            "lastname": "Test_lastname"
+        }
+
+        response = self.client.execute(create_user_email, variables)
+        self.assertIn('errors', response.to_dict())
