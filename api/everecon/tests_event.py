@@ -1,12 +1,14 @@
+import sys
 import time
-from django.utils import dateparse
-from .models import *
-from graphene_django.utils.testing import GraphQLTestCase
-from graphql_jwt.testcases import JSONWebTokenTestCase
+
+import pytz
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-import pytz
-import sys
+from django.utils import dateparse
+from graphene_django.utils.testing import GraphQLTestCase
+from graphql_jwt.testcases import JSONWebTokenTestCase
+
+from .models import *
 
 sys.tracebacklimit = 0
 

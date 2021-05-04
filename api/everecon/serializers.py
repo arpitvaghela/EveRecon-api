@@ -1,6 +1,8 @@
-from rest_framework import serializers
-from .models import Community
 from django.http import Http404
+from rest_framework import serializers
+
+from .models import Community
+
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,13 +1,11 @@
 import graphene
 import graphql_jwt
 from django.contrib.auth import get_user_model
-from graphene_django import DjangoObjectType
-from everecon.models import Profile, User
-from graphql_jwt.shortcuts import create_refresh_token, get_token
-import graphene
-import graphql_jwt
 from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
+from everecon.models import Profile, User
+from graphene_django import DjangoObjectType
+from graphql_jwt.shortcuts import create_refresh_token, get_token
 
 # Mutation: Create User
 # We want to return:

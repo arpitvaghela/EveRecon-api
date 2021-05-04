@@ -1,8 +1,8 @@
 import graphene
 import graphql_jwt
-from everecon import schema_init, schema_users
+from everecon import (schema_community, schema_event, schema_init,
+                      schema_search, schema_speaker, schema_users)
 from graphene_django import DjangoObjectType
-from everecon import schema_init, schema_users, schema_community, schema_event, schema_speaker, schema_search
 
 
 class Query(schema_init.Query, schema_users.Query,
