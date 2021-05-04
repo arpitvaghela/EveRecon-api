@@ -362,8 +362,8 @@ class EveReconTest(JSONWebTokenTestCase):
         user = self.create_dummy_user()
 
         add_follower = '''
-            mutation addVolunteer ($community: ID!, $user: ID!) {
-                addVolunteer (community: $community, user: $user) {
+            mutation addFollower ($community: ID!, $user: ID!) {
+                addFollower (community: $community, user: $user) {
                     ok
                 }
             }
@@ -389,8 +389,8 @@ class EveReconTest(JSONWebTokenTestCase):
         user = self.create_dummy_user()
 
         remove_follower = '''
-            mutation removeVolunteer ($community: ID!, $user: ID!) {
-                removeVolunteer (community: $community, user: $user) {
+            mutation removeFollower ($community: ID!, $user: ID!) {
+                removeFollower (community: $community, user: $user) {
                     ok
                 }
             }
