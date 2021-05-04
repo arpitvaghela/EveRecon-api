@@ -37,7 +37,8 @@ class UpdateSpeakerPicture(graphene.Mutation):
      # your return fields
     success = graphene.String()
     picture = graphene.String()
-
+    
+    @permissions_checker([IsAuthenticated])
     def mutate(self,  info, id, *args, **kwargs):
         # When using it in Django, context will be the request
         files = info.context.FILES
