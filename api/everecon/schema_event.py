@@ -26,6 +26,7 @@ class CreateEvent(graphene.Mutation):
         community = graphene.ID()
         category = graphene.ID(required=True)
         tags = graphene.List(graphene.String)
+        speakers = graphene.List(graphene.ID)
 
     event = graphene.Field(EventType)
     community = graphene.Field(CommunityType)
@@ -37,6 +38,10 @@ class CreateEvent(graphene.Mutation):
         # print(kwargs)
         community = Community.objects.get(id=kwargs.pop("community"))
         category = Category.objects.get(id=kwargs.pop("category"))
+        if "speakers" in kwargs.keys():
+            speaker_list = kwargs.pop("speakers")
+        else:
+            speaker_list = []
         # tags = Tag.objects.filter(id__in=kwargs.pop("tags"))
         # tag_obj =
         tags = kwargs.pop("tags")
@@ -49,9 +54,14 @@ class CreateEvent(graphene.Mutation):
             tag_obj, created = Tag.objects.get_or_create(name=tag.lower())
             # print(tag_obj.name, created)
             tag_obj.events.add(event)
+        for speaker_id in speaker_list:
+            if Speaker.objects.get(id=speaker_id):
+                event.speakers.add(Speaker.objects.get(id=speaker_id))
+        event.save()
         # For datetime - https://github.com/graphql-python/graphene/issues/136
         # event.tags.add(*tags)
         # event = Event.objects.get(id=event.id)
+        event = Event.objects.get(id=event.id)
         tags = event.tags.all()
         print(tags)
         return CreateEvent(event=event, community=community, category=category, tags=tags)
@@ -135,7 +145,7 @@ class AddSpeaker(graphene.Mutation):
         eventid = graphene.ID(required=True)
         speakerid = graphene.ID(required=True)
 
-    ok = graphene.Boolean() 
+    ok = graphene.Boolean()
 
     @ permissions_checker([IsAuthenticated])
     def mutate(root, info, eventid, speakerid):
@@ -143,8 +153,9 @@ class AddSpeaker(graphene.Mutation):
         # user = User.objects.get(kwargs.get(''))
         event.speakers.add(speakerid)
         speaker = Speaker.objects.get(id=speakerid)
-        send_speaker_email(speaker.first_name, speaker.email, event.name, event.id, event.community.name)
-        return AddSpeaker(ok=True)  
+        send_speaker_email(speaker.first_name, speaker.email,
+                           event.name, event.id, event.community.name)
+        return AddSpeaker(ok=True)
 
 
 class RemoveSpeaker(graphene.Mutation):

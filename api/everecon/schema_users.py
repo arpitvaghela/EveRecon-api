@@ -136,7 +136,7 @@ class UpdateUserSecurity(graphene.Mutation):
         user.email = email
         user.set_password(pwd)
         user.save()
-        user = user.objects.get(id=user.id)
+        user = User.objects.get(id=user.id)
         return UpdateUserSecurity(user=user)
 
 

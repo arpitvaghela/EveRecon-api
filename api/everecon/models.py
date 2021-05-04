@@ -70,7 +70,8 @@ def validation_youtube(youtube):
 def validation_mobile(mobile):
     mobile_validator_message = "Invalid mobile number!"
     mobile_regex = "^(\+\d{1,3}[- ]?)?\d{10}$"
-    mobile_validator = RegexValidator(regex=mobile_regex, message=mobile_validator_message)
+    mobile_validator = RegexValidator(
+        regex=mobile_regex, message=mobile_validator_message)
     return mobile_validator(mobile)
 
 
@@ -145,7 +146,8 @@ def path_and_rename_communitybanner(instance, filename):
 
 
 class Profile(models.Model):
-    contact = models.CharField(max_length=15, null=True, blank=True, validators=[validation_mobile])
+    contact = models.CharField(
+        max_length=15, null=True, blank=True, validators=[validation_mobile])
     city = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     profile_picture = models.ImageField(
@@ -232,15 +234,18 @@ class Event(models.Model):
 @receiver(post_save, sender=Event)
 def event_time(sender, instance, *args, **kwargs):
     if instance.start_time >= instance.end_time:
-        raise ValidationError("Event start-time cannot be greater than end-time")
+        raise ValidationError(
+            "Event start-time cannot be greater than end-time")
 
 
 class Speaker(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField()
-    facebook = models.URLField(validators=[validation_facebook])
-    instagram = models.URLField(validators=[validation_instagram])
+    facebook = models.URLField(
+        validators=[validation_facebook], blank=True, null=True)
+    instagram = models.URLField(
+        validators=[validation_instagram], blank=True, null=True)
     profile_picture = models.ImageField(
         upload_to=path_and_rename_profile, blank=True, null=True
     )
@@ -271,7 +276,7 @@ class Community(models.Model):
     email = models.EmailField(null=True, blank=True)
     members_count = models.IntegerField(
         blank=True, default=0
-    )  #TODO: Update this automatically
+    )  # TODO: Update this automatically
     website = models.URLField(null=True, blank=True)
     facebook = models.URLField(
         null=True, blank=True, validators=[validation_facebook])
