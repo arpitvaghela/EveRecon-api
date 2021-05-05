@@ -52,3 +52,6 @@ zope.event==4.5.0
 zope.hookable==5.0.1
 zope.interface==5.4.0
 zope.schema==6.1.0
+cloudinary 
+django-cloudinary-storage
+python-decouple

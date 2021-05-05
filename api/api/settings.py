@@ -14,6 +14,8 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+import cloudinary
+import cloudinary_storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +30,7 @@ SECRET_KEY = "c+2s%%0i4i+_h$ksu#i9iybc!ny89#&^l61phnh4xxxkphs#*("
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["everecon-api.herokuapp.com", "127.0.0.1","localhost"]
+ALLOWED_HOSTS = ["everecon-api.herokuapp.com", "127.0.0.1", "localhost"]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
@@ -46,6 +48,9 @@ INSTALLED_APPS = [
     "graphene_django",
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     "everecon",
+    # Media Cloudinary
+    "cloudinary",
+    "cloudinary_storage",
     #    "django_nose",
 ]
 
@@ -173,3 +178,12 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 STATIC_URL = "/static/"
+
+if os.getenv("CLOUDINARY_NAME"):
+    CLOUDINARY_STORAGE = {
+        "CLOUD_NAME": os.getenv("CLOUDINARY_NAME"),
+        "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+        "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+    }
+
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
