@@ -174,7 +174,7 @@ class UpdateCommunity(graphene.Mutation):
     # followers = graphene.Field(UserType) # TODO: Check if this is required
 
     # @permissions_checker([IsAuthenticated])
-    @permissions_checker([IsCommunityLeader])
+    @permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         followers = None
@@ -191,7 +191,7 @@ class UpdateCommunity(graphene.Mutation):
         # community, created = Community.objects.update_or_create(
         #     defaults=kwargs, id=id)
 
-        if not check_object_permissions([IsCommunityLeader], info.context, Community.objects.get(id=id)):
+        if not check_object_permissions([IsCoreMember], info.context, Community.objects.get(id=id)):
             raise PermissionDenied()
 
         Community.objects.filter(id=id).update(**kwargs)
