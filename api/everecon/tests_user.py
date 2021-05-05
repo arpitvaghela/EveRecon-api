@@ -1,7 +1,4 @@
-import sys
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
@@ -33,7 +30,7 @@ class EveReconTest(JSONWebTokenTestCase):
 
     def create_dummy_community(self):
         user = self.create_dummy_user()
-        return Community.objects.create(
+        community = Community.objects.create(
             name="Test_community",
             address="Test_address",
             city="Test_city",
@@ -49,18 +46,13 @@ class EveReconTest(JSONWebTokenTestCase):
             website="https://www.facebook.com/",
             leader=user
         )
-
-    def create_dummy_core_member(self):
-        community = self.create_dummy_community()
+        # core_member
         core_members = []
         for user in range(0, 5):
             core_member = self.create_dummy_user()
             core_members.append(core_member)
         community.core_members.set(core_members)
-        return community
-
-    def create_dummy_volunteer(self):
-        community = self.create_dummy_community()
+        # volunteer
         volunteers = []
         for user in range(0, 5):
             volunteer = self.create_dummy_user()
@@ -313,7 +305,7 @@ class EveReconTest(JSONWebTokenTestCase):
     def test_volunteer_as_core_member(self):
         try:
             with transaction.atomic():
-                community = self.create_dummy_core_member()
+                community = self.create_dummy_community()
                 core_members = community.core_members.all()
                 leader = community.leader
                 self.client.authenticate(leader)
@@ -341,7 +333,7 @@ class EveReconTest(JSONWebTokenTestCase):
     def test_core_member_as_volunteer(self):
         try:
             with transaction.atomic():
-                community = self.create_dummy_volunteer()
+                community = self.create_dummy_community()
                 volunteers = community.volunteers.all()
                 leader = community.leader
                 self.client.authenticate(leader)
@@ -486,7 +478,7 @@ class EveReconTest(JSONWebTokenTestCase):
         self.assertEquals(content, data)
 
     # Invalid EmailID in create user
-    def test_create_user(self):
+    def test_create_user_email_validation(self):
         create_user_email = '''
         mutation createUser ($city: String, $contact: String, $country: String, $email: String!, $firstname: String, $lastname: String, $password: String!, $username: String!) {
             createUser (city: $city, contact: $contact, country: $country, email: $email, firstname: $firstname, lastname: $lastname, password: $password, username: $username) {

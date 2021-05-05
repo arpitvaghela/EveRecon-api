@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.utils import dateparse
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
-
 from .models import *
 
 sys.tracebacklimit = 0
@@ -115,11 +114,151 @@ class EveReconTest(JSONWebTokenTestCase):
         Community.objects.all().delete()
         User.objects.all().delete()
 
+    # Update Community testing
+    def test_update_community(self):
+        follower = []
+        follower_id = []
+        for i in range(0, 5):
+            user = self.create_dummy_user()
+            js = {'id': str(user.id), 'username': user.username}
+            follower.append(js)
+            follower_id.append(user.id)
+
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
+
+        update_community = '''
+        mutation updateCommunity ($address: String, $city: String, $country: String, $description: String, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $followers: [ID], $id: ID!, $instagram: String, $isActive: Boolean, $linkedin: String, $name: String, $website: String) {
+            updateCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, followers: $followers, id: $id, instagram: $instagram, isActive: $isActive, linkedin: $linkedin, name: $name, website: $website) {
+                community {
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    followers {
+                        id
+                        username
+                    }
+                    isActive
+                    name
+                    instagram
+                    linkedin
+                    twitter
+                    website
+                }
+            }
+        }
+        '''
+        variables = {
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description": "Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "test@gmail.com",
+            "facebook": "https://www.facebook.com/mrparth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "followers": follower_id,
+            "id": community.id,
+            "isActive": True,
+            "name": "Test_community",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://github.com/arpitvaghela/EveRecon-api/tree/backend"
+        }
+
+        data = {'community': {
+            "address": variables['address'],
+            "city": variables['city'],
+            "country": variables['country'],
+            "description": variables['description'],
+            "discord": variables['discord'],
+            "email": variables['email'],
+            "facebook": variables['facebook'],
+            "featuredVideo": variables['featuredVideo'],
+            "followers": follower,
+            "isActive": variables['isActive'],
+            "name": variables['name'],
+            "instagram": variables['instagram'],
+            "linkedin": variables['linkedin'],
+            "twitter": variables['twitter'],
+            "website": variables['website']
+        }}
+
+        response = self.client.execute(update_community, variables)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
+    # Add Volunteer
+    def test_add_volunteer(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
+        user = self.create_dummy_user()
+
+        add_volunteer = '''
+            mutation addVolunteer ($community: ID!, $user: ID!) {
+                addVolunteer (community: $community, user: $user) {
+                    ok
+                }
+            }
+            '''
+
+        variables = {
+            "community": community.id,
+            "user": user.id
+        }
+
+        data = {
+            "ok": True
+        }
+
+        response = self.client.execute(add_volunteer, variables)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
+    # Remove Volunteer
+    def test_remove_volunteer(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
+        user = self.create_dummy_user()
+
+        remove_volunteer = '''
+            mutation removeVolunteer ($community: ID!, $user: ID!) {
+                removeVolunteer (community: $community, user: $user) {
+                    ok
+                }
+            }
+            '''
+
+        variables = {
+            "community": community.id,
+            "user": user.id
+        }
+
+        data = {
+            "ok": True
+        }
+
+        response = self.client.execute(remove_volunteer, variables)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
+
     # Create Event
     def test_create_event(self):
         community = self.create_dummy_community()
-        leader = community.leader
-        self.client.authenticate(leader)
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
         category = self.create_dummy_category()
 
         start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
@@ -204,8 +343,9 @@ class EveReconTest(JSONWebTokenTestCase):
     # Update event
     def test_update_event(self):
         event = self.create_dummy_event()
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
+
         community = Community.objects.get(id=event.community.id)
         category = Category.objects.get(id=event.category.id)
 
@@ -292,8 +432,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Delete Event
     def test_delete_event(self):
         event = self.create_dummy_event()
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
 
         delete_event = '''
             mutation deleteEvent ($id: ID) {
@@ -314,116 +454,128 @@ class EveReconTest(JSONWebTokenTestCase):
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
 
-    # Register Event
-    def test_register_event(self):
-        event = self.create_dummy_event()
-        user = self.create_dummy_user()
-        self.client.authenticate(user)
+    # Create Community testing
+    def test_create_community(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
 
-        register_event = '''
-        mutation registerEvent ($id: ID!) {
-            registerEvent (id: $id) {
-                event {
-                    id
+        create_community = '''
+        mutation createCommunity ($address: String, $city: String, $country: String, $description: String!, $discord: String, $email: String, $facebook: String, $featuredVideo: String, $instagram: String, $linkedin: String, $name: String!, $twitter: String, $website: String) {
+            createCommunity (address: $address, city: $city, country: $country, description: $description, discord: $discord, email: $email, facebook: $facebook, featuredVideo: $featuredVideo, instagram: $instagram, linkedin: $linkedin, name: $name, twitter: $twitter, website: $website) {
+                community {
+                    address
+                    city
+                    country
+                    description
+                    discord
+                    email
+                    facebook
+                    featuredVideo
+                    instagram
+                    linkedin
                     name
-                    community {
-                        id
-                        name
-                        description
-                    } 
+                    twitter
+                    website
+                    leader
                 }
             }
         }
         '''
 
         variables = {
-            "id": event.id
+            "address": "Test_address",
+            "city": "Test_city",
+            "country": "Test_country",
+            "description": "Test_description",
+            "discord": "https://discordapp.com/users/mrparth23#0639",
+            "email": "Test@gmail.com",
+            "facebook": "https://www.facebook.com/mrparth23/",
+            "featuredVideo": "https://www.youtube.com/watch?v=OFA5UfVimxI",
+            "instagram": "https://www.instagram.com/mr.parth23/",
+            "linkedin": "https://www.linkedin.com/in/mrparth23/",
+            "name": "Test_community",
+            "twitter": "https://twitter.com/mrparth23",
+            "website": "https://www.facebook.com/"
         }
 
-        data = {'event': {
-            'id': str(event.id),
-            'name': event.name,
-            'community': {
-                'id': str(event.community.id),
-                'name': event.community.name,
-                'description': event.community.description
+        response = self.client.execute(create_community, variables)
+        self.assertIn('errors', response.to_dict())
+
+    # Delete Community
+    def test_delete_community(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
+
+        delete_community = '''
+        mutation deleteCommunity ($id: ID) {
+            deleteCommunity (id: $id) {
+                ok
             }
-        }}
-
-        response = self.client.execute(register_event, variables)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # EventByID testing
-    def test_event_by_id(self):
-        event = self.create_dummy_event()
-        event_by_id = '''
-            query eventById ($id: ID){
-                 eventById(id: $id) {
-                     name
-                 }
-             }
+        }
         '''
 
         variables = {
-            'id': event.id
+            "id": community.id
         }
 
-        data = {
-            "name": event.name
-        }
+        response = self.client.execute(delete_community, variables)
+        self.assertIn('errors', response.to_dict())
 
-        response = self.client.execute(event_by_id, variables)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
+    # Add CoreMember
+    def test_add_core_member(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
 
-    # Create Speaker
-    def test_create_speaker(self):
-        create_speaker = '''
-            mutation createSpeaker ($description: String, $email: String, $facebook: String, $firstName: String!, $instagram: String, $lastName: String) {
-                createSpeaker (description: $description, email: $email, facebook: $facebook, firstName: $firstName, instagram: $instagram, lastName: $lastName) {
-                    speaker {
-                        description
-                        email
-                        facebook
-                        instagram
-                        firstName
-                        lastName
-                    }
+        user = self.create_dummy_user()
+
+        add_core_member = '''
+            mutation addCoreMember ($community: ID!, $user: ID!) {
+                addCoreMember (community: $community, user: $user) {
+                    ok
                 }
             }
             '''
 
         variables = {
-            "description": "Test_Description",
-            "email": "test@gmail.com",
-            "facebook": "https://www.facebook.com/mrparth23/",
-            "firstName": "Test_firstname",
-            "instagram": "https://www.instagram.com/mr.parth23/",
-            "lastName": "Test_lastname"
+            "community": community.id,
+            "user": user.id
         }
 
-        data = {"speaker": {
-            "description": variables['description'],
-            "email": variables['email'],
-            "facebook": variables['facebook'],
-            "instagram": variables['instagram'],
-            "firstName": variables['firstName'],
-            "lastName": variables['lastName']
-        }}
+        response = self.client.execute(add_core_member, variables)
+        self.assertIn('errors', response.to_dict())
 
-        response = self.client.execute(create_speaker, variables)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
+    # Remove CoreMember
+    def test_remove_core_member(self):
+        community = self.create_dummy_community()
+        core_members = community.core_members.all()
+        self.client.authenticate(core_members[0])
+
+        user = self.create_dummy_user()
+
+        remove_core_member = '''
+            mutation removeCoreMember ($community: ID!, $user: ID!) {
+                removeCoreMember (community: $community, user: $user) {
+                    ok
+                }
+            }
+            '''
+
+        variables = {
+            "community": community.id,
+            "user": user.id
+        }
+
+        response = self.client.execute(remove_core_member, variables)
+        self.assertIn('errors', response.to_dict())
 
     # Add Speaker
     def test_add_speaker(self):
         event = self.create_dummy_event()
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
         speaker = self.create_dummy_speaker()
 
         add_speaker = '''
@@ -448,8 +600,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Remove Speaker
     def test_remove_speaker(self):
         event = self.create_dummy_event()
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
         speaker = self.create_dummy_speaker()
 
         remove_speaker = '''
@@ -467,116 +619,6 @@ class EveReconTest(JSONWebTokenTestCase):
 
         data = {"ok": True}
         response = self.client.execute(remove_speaker, variables)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # Speaker by email
-    def test_speaker_by_email(self):
-        speaker = self.create_dummy_speaker()
-
-        speaker_by_email = '''
-            query speakerByEmail ($email: String) {
-                speakerByEmail (email: $email) {
-                    firstName
-                    lastName
-                    email
-                }
-            }
-
-        '''
-
-        variables = {
-            'email': speaker.email
-        }
-
-        data = {
-            'firstName': speaker.first_name,
-            'lastName': speaker.last_name,
-            'email': variables['email']
-        }
-
-        response = self.client.execute(speaker_by_email, variables)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # All speaker
-    def test_all_speaker(self):
-
-        speaker = []
-        for i in range(0, 5):
-            speak = self.create_dummy_speaker()
-            speaker.append({'firstName': speak.first_name, 'lastName': speak.last_name, 'email': speak.email})
-
-        all_speaker = '''
-            query allSpeaker {
-                allSpeaker {
-                    firstName
-                    lastName
-                    email
-                }
-            }
-        '''
-
-        data = speaker
-        response = self.client.execute(all_speaker)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # All category
-    def test_all_category(self):
-        category = []
-        for i in range(0, 5):
-            cat = self.create_dummy_category()
-            category.append({'id': str(cat.id), 'name': cat.name})
-
-        all_category = '''
-        query categories{
-            categories{
-                id
-                name
-            }
-        }
-        '''
-        data = category
-        response = self.client.execute(all_category)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.assertEquals(content, data)
-
-    # Events of community
-    def test_events_of_community(self):
-        event = self.create_dummy_event()
-
-        events_of_community = '''
-        query communityById ($id: ID) {
-            communityById (id: $id) {
-                id
-                name
-                description
-                email
-                events {
-                    id
-                    name
-                    description
-                }
-            }
-        }
-        '''
-        variables = {
-            "id": event.community.id
-        }
-
-        data = {
-            'id': str(event.community.id),
-            'name': event.community.name,
-            'description': event.community.description,
-            'email': event.community.email,
-            'events': [{'id': str(event.id), 'name': event.name, 'description': event.description}]
-        }
-        response = self.client.execute(events_of_community, variables)
         self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
@@ -601,8 +643,8 @@ class EveReconTest(JSONWebTokenTestCase):
         }
         output = self.client.execute(register, variables_register)
 
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
 
         # check-in
         checkin_event = '''
@@ -649,8 +691,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # View Event RSVP
     def test_view_event_RSVP(self):
         event = self.create_dummy_event()
-        leader = event.community.leader
-        self.client.authenticate(leader)
+        core_members = event.community.core_members.all()
+        self.client.authenticate(core_members[0])
 
         users = []
         for i in range(0, 5):
@@ -694,131 +736,3 @@ class EveReconTest(JSONWebTokenTestCase):
         self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
-
-    # My Registered Event
-    def test_my_event(self):
-        myprofile = self.create_dummy_user()
-        self.client.authenticate(myprofile)
-        event = []
-        eve = self.create_dummy_event()
-        event.append({'id': str(eve.id), 'name': eve.name, 'description': eve.description})
-
-        register_event = '''
-            mutation registerEvent ($id: ID!) {
-                registerEvent (id: $id) {
-                    event {
-                        id
-                    }
-                }
-            }
-            '''
-        variables = {
-            'id': eve.id
-        }
-
-        self.client.execute(register_event, variables)
-
-        event_registered = '''
-            query myprofile {
-                myprofile {
-                    eventsAttended {
-                        id
-                        name
-                        description
-                    }
-                }
-            }
-            '''
-        data = {
-            'eventsAttended': event
-        }
-
-        response = self.client.execute(event_registered)
-        self.assertNotIn('errors', response.to_dict())
-        content = list(response.data.items())[0][1]
-        self.client.execute(event_registered, data)
-
-    # Event time validation test in createEvent
-    def test_create_event_time_validation(self):
-        community = self.create_dummy_community()
-        category = self.create_dummy_category()
-
-        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
-        time.sleep(2)
-        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
-
-        create_event_time = '''
-            mutation createEvent ($address: String, $category: ID!, $city: String, $community: ID, $country: String, $description: String!, $endTime: DateTime!, $kind: String!, $liveUrl: String, $maxRsvp: Int, $name: String!, $startTime: DateTime!, $tags: [String]) {
-                createEvent (address: $address, category: $category, city: $city, community: $community, country: $country, description: $description, endTime: $endTime, kind: $kind, liveUrl: $liveUrl, maxRsvp: $maxRsvp, name: $name, startTime: $startTime, tags: $tags) {
-                    event {
-                        name
-                    }
-                }
-            }
-            '''
-
-        variables = {
-            "address": "Test_address",
-            "category": category.id,
-            "city": "Test_city",
-            "community": community.id,
-            "country": "Test_country",
-            "description": "Test_description",
-            "kind": "V",
-            "liveUrl": "https://github.com/arpitvaghela/EveRecon-api",
-            "maxRsvp": 50,
-            "name": "Test_event",
-            "startTime": end_time,
-            "endTime": start_time,
-            "tags": ["Test_tag1", "Test_tag2", "Test_tag3"]
-        }
-
-        response = self.client.execute(create_event_time, variables)
-        self.assertIn('errors', response.to_dict())
-
-    # Facebook validation test in createSpeaker
-    def test_create_speaker_facebook_validation(self):
-        create_speaker_facebook = '''
-            mutation createSpeaker ($description: String, $email: String, $facebook: String, $firstName: String!, $instagram: String, $lastName: String) {
-                createSpeaker (description: $description, email: $email, facebook: $facebook, firstName: $firstName, instagram: $instagram, lastName: $lastName) {
-                    speaker {
-                        facebook
-                    }
-                }
-            }
-            '''
-
-        variables = {
-            "description": "Test_Description",
-            "email": "test@gmail.com",
-            "facebook": "https://www.facebk.com/mrparth23/",
-            "firstName": "Test_firstname",
-            "instagram": "https://www.instagram.com/mr.parth23/",
-            "lastName": "Test_lastname"
-        }
-
-        response = self.client.execute(create_speaker_facebook, variables)
-        self.assertIn('errors', response.to_dict())
-
-    # Instagram validation test in createSpeaker
-    def test_create_speaker_instagram_validation(self):
-        create_speaker_instagram = '''
-            mutation createSpeaker ($description: String, $email: String, $facebook: String, $firstName: String!, $instagram: String, $lastName: String) {
-                createSpeaker (description: $description, email: $email, facebook: $facebook, firstName: $firstName, instagram: $instagram, lastName: $lastName) {
-                    speaker {
-                        instagram
-                    }
-                }
-            }
-            '''
-
-        variables = {
-            "description": "Test_Description",
-            "email": "test@gmail.com",
-            "facebook": "https://www.facebook.com/mrparth23/",
-            "firstName": "Test_firstname",
-            "instagram": "https://www.instam.com/mr.parth23/",
-            "lastName": "Test_lastname"
-        }
-        response = self.client.execute(create_speaker_instagram, variables)
-        self.assertIn('errors', response.to_dict())

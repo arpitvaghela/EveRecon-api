@@ -32,7 +32,7 @@ class EveReconTest(JSONWebTokenTestCase):
 
     def create_dummy_community(self):
         user = self.create_dummy_user()
-        return Community.objects.create(
+        community = Community.objects.create(
             name="Test_community",
             address="Test_address",
             city="Test_city",
@@ -48,18 +48,13 @@ class EveReconTest(JSONWebTokenTestCase):
             website="https://www.facebook.com/",
             leader=user
         )
-
-    def create_dummy_core_member(self):
-        community = self.create_dummy_community()
+        # core_member
         core_members = []
         for user in range(0, 5):
             core_member = self.create_dummy_user()
             core_members.append(core_member)
         community.core_members.set(core_members)
-        return community
-
-    def create_dummy_volunteer(self):
-        community = self.create_dummy_community()
+        # volunteer
         volunteers = []
         for user in range(0, 5):
             volunteer = self.create_dummy_user()
