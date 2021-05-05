@@ -49,6 +49,24 @@ class EveReconTest(JSONWebTokenTestCase):
             leader=user
         )
 
+    def create_dummy_core_member(self):
+        community = self.create_dummy_community()
+        core_members = []
+        for user in range(0, 5):
+            core_member = self.create_dummy_user()
+            core_members.append(core_member)
+        community.core_members.set(core_members)
+        return community
+
+    def create_dummy_volunteer(self):
+        community = self.create_dummy_community()
+        volunteers = []
+        for user in range(0, 5):
+            volunteer = self.create_dummy_user()
+            volunteers.append(volunteer)
+        community.volunteers.set(volunteers)
+        return community
+
     def setUp(self):
         self.user = get_user_model().objects.create(username='test', password='Test@10')
         self.client.authenticate(self.user)
@@ -125,6 +143,9 @@ class EveReconTest(JSONWebTokenTestCase):
     # Update Community testing
     def test_update_community(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
+
         follower = []
         follower_id = []
         for i in range(0, 5):
@@ -204,6 +225,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Delete Community
     def test_delete_community(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
 
         delete_community = '''
         mutation deleteCommunity ($id: ID) {
@@ -227,6 +250,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # CommunityByID testing
     def test_community_by_id(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         community_by_id = '''
             query communityById ($id: ID){
                  communityById(id: $id) {
@@ -253,6 +278,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Add CoreMember
     def test_add_core_member(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         add_core_member = '''
@@ -280,6 +307,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Remove CoreMember
     def test_remove_core_member(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         remove_core_member = '''
@@ -307,6 +336,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Add Volunteer
     def test_add_volunteer(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         add_volunteer = '''
@@ -334,6 +365,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Remove Volunteer
     def test_remove_volunteer(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         remove_volunteer = '''
@@ -361,6 +394,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Add Follower
     def test_add_follower(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         add_follower = '''
@@ -388,6 +423,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Remove Follower
     def test_remove_follower(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         user = self.create_dummy_user()
 
         remove_follower = '''

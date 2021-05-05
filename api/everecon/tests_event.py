@@ -52,6 +52,24 @@ class EveReconTest(JSONWebTokenTestCase):
             leader=user
         )
 
+    def create_dummy_core_member(self):
+        community = self.create_dummy_community()
+        core_members = []
+        for user in range(0, 5):
+            core_member = self.create_dummy_user()
+            core_members.append(core_member)
+        community.core_members.set(core_members)
+        return community
+
+    def create_dummy_volunteer(self):
+        community = self.create_dummy_community()
+        volunteers = []
+        for user in range(0, 5):
+            volunteer = self.create_dummy_user()
+            volunteers.append(volunteer)
+        community.volunteers.set(volunteers)
+        return community
+
     def create_dummy_event(self):
         community = self.create_dummy_community()
         category = self.create_dummy_category()
@@ -100,6 +118,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Create Event
     def test_create_event(self):
         community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
         category = self.create_dummy_category()
 
         start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
@@ -184,6 +204,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Update event
     def test_update_event(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
         community = Community.objects.get(id=event.community.id)
         category = Category.objects.get(id=event.category.id)
 
@@ -270,6 +292,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Delete Event
     def test_delete_event(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
 
         delete_event = '''
             mutation deleteEvent ($id: ID) {
@@ -293,6 +317,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Register Event
     def test_register_event(self):
         event = self.create_dummy_event()
+        user = self.create_dummy_user()
+        self.client.authenticate(user)
 
         register_event = '''
         mutation registerEvent ($id: ID!) {
@@ -396,6 +422,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Add Speaker
     def test_add_speaker(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
         speaker = self.create_dummy_speaker()
 
         add_speaker = '''
@@ -420,6 +448,8 @@ class EveReconTest(JSONWebTokenTestCase):
     # Remove Speaker
     def test_remove_speaker(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
         speaker = self.create_dummy_speaker()
 
         remove_speaker = '''
@@ -563,13 +593,16 @@ class EveReconTest(JSONWebTokenTestCase):
                 event{
                     id
                 }
-        }
+            }
         }
         '''
         variables_register = {
             'id': event.id
         }
         output = self.client.execute(register, variables_register)
+
+        leader = event.community.leader
+        self.client.authenticate(leader)
 
         # check-in
         checkin_event = '''
@@ -616,10 +649,13 @@ class EveReconTest(JSONWebTokenTestCase):
     # View Event RSVP
     def test_view_event_RSVP(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
+
         users = []
         for i in range(0, 5):
-            use = self.create_dummy_user()
-            self.client.authenticate(use)
+            user = self.create_dummy_user()
+            self.client.authenticate(user)
             register_event = '''
                 mutation registerEvent ($id: ID!) {
                     registerEvent (id: $id) {
@@ -633,7 +669,7 @@ class EveReconTest(JSONWebTokenTestCase):
                 'id': event.id
             }
             self.client.execute(register_event, variables)
-            users.append({'id': str(use.id), 'username': use.username, 'email': use.email})
+            users.append({'id': str(user.id), 'username': user.username, 'email': user.email})
 
         event_RSVP = '''
             query eventById ($id: ID) {
