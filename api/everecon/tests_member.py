@@ -576,44 +576,50 @@ class EveReconTest(JSONWebTokenTestCase):
         self.assertIn('errors', response_uncheck_in.to_dict())
 
     # View Event RSVP
-    # def test_view_event_RSVP(self):
-    #     event = self.create_dummy_event()
-    #     user = self.create_dummy_user()
-    #     self.client.authenticate(user)
-    #
-    #     users = []
-    #     for i in range(0, 5):
-    #         user = self.create_dummy_user()
-    #         self.client.authenticate(user)
-    #         register_event = '''
-    #             mutation registerEvent ($id: ID!) {
-    #                 registerEvent (id: $id) {
-    #                     event {
-    #                         id
-    #                     }
-    #                 }
-    #             }
-    #             '''
-    #         variables = {
-    #             'id': event.id
-    #         }
-    #         self.client.execute(register_event, variables)
-    #         users.append({'id': str(user.id), 'username': user.username, 'email': user.email})
-    #
-    #     event_RSVP = '''
-    #         query eventById ($id: ID) {
-    #             eventById (id: $id) {
-    #                 attendees {
-    #                     id
-    #                     username
-    #                     email
-    #                 }
-    #             }
-    #         }
-    #         '''
-    #     var = {
-    #         'id': event.id
-    #     }
-    #
-    #     response = self.client.execute(event_RSVP, var)
-    #     self.assertIn('errors', response.to_dict())
+    def test_view_event_RSVP(self):
+        event = self.create_dummy_event()
+        user = self.create_dummy_user()
+        self.client.authenticate(user)
+    
+        users = []
+        for i in range(0, 5):
+            user = self.create_dummy_user()
+            self.client.authenticate(user)
+            register_event = '''
+                mutation registerEvent ($id: ID!) {
+                    registerEvent (id: $id) {
+                        event {
+                            id
+                        }
+                    }
+                }
+                '''
+            variables = {
+                'id': event.id
+            }
+            self.client.execute(register_event, variables)
+            users.append({'id': str(user.id), 'username': user.username, 'email': user.email})
+    
+        event_RSVP = '''
+            query eventById ($id: ID) {
+                eventById (id: $id) {
+                    attendees {
+                        id
+                        username
+                        email
+                    }
+                }
+            }
+            '''
+        var = {
+            'id': event.id
+        }
+
+        data = {
+            'attendees': users
+        }
+
+        response = self.client.execute(event_RSVP, var)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
