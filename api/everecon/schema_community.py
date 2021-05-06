@@ -3,13 +3,14 @@ from random import sample
 import graphene
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-from django_graphene_permissions import permissions_checker
+from django_graphene_permissions import permissions_checker, check_object_permissions, PermissionDenied
 from django_graphene_permissions.permissions import IsAuthenticated
 from graphene_django import DjangoObjectType
 from graphene_django.forms.mutation import DjangoFormMutation
 from graphene_django.rest_framework.mutation import SerializerMutation
 
 from .models import Category, Community, Event, Tag
+from .permissions import *
 from .schema_users import UserType
 from .serializers import *
 
@@ -172,7 +173,8 @@ class UpdateCommunity(graphene.Mutation):
     community = graphene.Field(CommunityType)
     # followers = graphene.Field(UserType) # TODO: Check if this is required
 
-    @permissions_checker([IsAuthenticated])
+    # @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         followers = None
@@ -188,6 +190,10 @@ class UpdateCommunity(graphene.Mutation):
         # community = Community.objects.filter(id=id).update(**kwargs)
         # community, created = Community.objects.update_or_create(
         #     defaults=kwargs, id=id)
+
+        if not check_object_permissions([IsCoreMember], info.context, Community.objects.get(id=id)):
+            raise PermissionDenied()
+
         Community.objects.filter(id=id).update(**kwargs)
         community = Community.objects.get(id=id)
         # print(community.name)
@@ -203,9 +209,11 @@ class DeleteCommunity(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCommunityLeader])
     def mutate(root, info, **kwargs):
         obj = Community.objects.get(pk=kwargs["id"])
+        if not check_object_permissions([IsCommunityLeader], info.context, obj):
+            raise PermissionDenied()
         obj.delete()
         return DeleteCommunity(ok=True)
 
@@ -217,9 +225,11 @@ class AddCoreMember(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCommunityLeader])
     def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
+        if not check_object_permissions([IsCommunityLeader], info.context, community):
+            raise PermissionDenied()
         # user = User.objects.get(kwargs.get(''))
         community.core_members.add(kwargs.get("user"))
         return AddCoreMember(ok=True)
@@ -232,9 +242,11 @@ class RemoveCoreMember(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCommunityLeader])
     def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
+        if not check_object_permissions([IsCommunityLeader], info.context, community):
+            raise PermissionDenied()
         community.core_members.remove(kwargs.get("user"))
         return RemoveCoreMember(ok=True)
 
@@ -246,9 +258,11 @@ class AddVolunteer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
+        if not check_object_permissions([IsCoreMember], info.context, community):
+            raise PermissionDenied()
         # user = User.objects.get(kwargs.get(''))
         community.volunteers.add(kwargs.get("user"))
         return AddVolunteer(ok=True)
@@ -261,9 +275,11 @@ class RemoveVolunteer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         community = Community.objects.get(id=kwargs.get("community"))
+        if not check_object_permissions([IsCoreMember], info.context, community):
+            raise PermissionDenied()
         community.volunteers.remove(kwargs.get("user"))
         return RemoveVolunteer(ok=True)
 
@@ -306,11 +322,14 @@ class UpdateCommunityLogo(graphene.Mutation):
     success = graphene.String()
     logo = graphene.String()
 
+    @permissions_checker([IsCoreMember])
     def mutate(self,  info, id, *args, **kwargs):
         # When using it in Django, context will be the request
         files = info.context.FILES
         community: Community
         community = Community.objects.get(id=id)
+        if not check_object_permissions([IsCoreMember], info.context, community):
+            raise PermissionDenied()
         print(community)
         community.logo = files["file"]
         community.save()
@@ -327,11 +346,14 @@ class UpdateCommunityBanner(graphene.Mutation):
     success = graphene.String()
     banner = graphene.String()
 
+    @permissions_checker([IsCoreMember])
     def mutate(self,  info, id, *args, **kwargs):
         # When using it in Django, context will be the request
         files = info.context.FILES
         community: Community
         community = Community.objects.get(id=id)
+        if not check_object_permissions([IsCoreMember], info.context, community):
+            raise PermissionDenied()
         print(community)
         community.banner = files["file"]
         community.save()

@@ -2,12 +2,13 @@ from random import sample
 
 import graphene
 from django.contrib.auth.models import User
-from django_graphene_permissions import permissions_checker
+from django_graphene_permissions import permissions_checker, check_object_permissions, PermissionDenied
 from django_graphene_permissions.permissions import IsAuthenticated
 from graphene_django import DjangoObjectType
 
 from .email_sendgrid import *
 from .models import Category, Community, Event, Speaker, Tag
+from .permissions import *
 from .schema_community import CategoryType, CommunityType, EventType, TagType
 
 
@@ -33,10 +34,12 @@ class CreateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         # print(kwargs)
         community = Community.objects.get(id=kwargs.pop("community"))
+        if not check_object_permissions([IsCoreMember], info.context, community):
+            raise PermissionDenied()
         category = Category.objects.get(id=kwargs.pop("category"))
         if "speakers" in kwargs.keys():
             speaker_list = kwargs.pop("speakers")
@@ -105,12 +108,15 @@ class Checkin4Event(graphene.Mutation):
     ok = graphene.Boolean()
     message = graphene.String()
 
-    @permissions_checker([IsAuthenticated])
+    @permissions_checker([IsVolunteer])
     def mutate(root, info, **kwargs):
         eventid = kwargs.pop("eventid")
         userid = kwargs.pop("userid")
         user = User.objects.get(id=userid)
-        attends = Event.objects.get(id=eventid).attendees.all()
+        event = Event.objects.get(id=eventid)
+        if not check_object_permissions([IsVolunteer], info.context, event):
+            raise PermissionDenied()
+        attends = event.attendees.all()
         if user in attends:
             Event.objects.get(id=eventid).checkins.add(user)
             ok = True
@@ -129,12 +135,14 @@ class Uncheck4Event(graphene.Mutation):
     ok = graphene.Boolean()
     message = graphene.String()
 
-    @ permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsVolunteer])
     def mutate(root, info, *args, **kwargs):
         eventid = kwargs.pop("eventid")
         userid = kwargs.pop("userid")
         user = User.objects.get(id=userid)
         event = Event.objects.get(id=eventid)
+        if not check_object_permissions([IsVolunteer], info.context, event):
+            raise PermissionDenied()
         # user = User.objects.get(kwargs.get(''))
         event.checkins.remove(user)
         return Uncheck4Event(ok=True, message="Checkin removed")
@@ -147,9 +155,11 @@ class AddSpeaker(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @ permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsCoreMember])
     def mutate(root, info, eventid, speakerid):
         event = Event.objects.get(id=eventid)
+        if not check_object_permissions([IsCoreMember], info.context, event):
+            raise PermissionDenied()
         # user = User.objects.get(kwargs.get(''))
         event.speakers.add(speakerid)
         speaker = Speaker.objects.get(id=speakerid)
@@ -165,9 +175,11 @@ class RemoveSpeaker(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @ permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsCoreMember])
     def mutate(root, info, eventid, speakerid):
         event = Event.objects.get(id=eventid)
+        if not check_object_permissions([IsCoreMember], info.context, event):
+            raise PermissionDenied()
         # user = User.objects.get(kwargs.get(''))
         event.speakers.remove(speakerid)
         return RemoveSpeaker(ok=True)
@@ -195,7 +207,7 @@ class UpdateEvent(graphene.Mutation):
     tags = graphene.List(TagType)
     category = graphene.Field(CategoryType)
 
-    @ permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
         try:
@@ -203,6 +215,11 @@ class UpdateEvent(graphene.Mutation):
 
         except Exception:
             pass
+
+        event = Event.objects.get(id=id)
+        if not check_object_permissions([IsCoreMember], info.context, event):
+            raise PermissionDenied()
+
         Event.objects.filter(id=id).update(**kwargs)
         event = Event.objects.get(id=id)
         if tags:
@@ -243,9 +260,11 @@ class DeleteEvent(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    @ permissions_checker([IsAuthenticated])
+    @ permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         obj = Event.objects.get(pk=kwargs["id"])
+        if not check_object_permissions([IsCoreMember], info.context, obj):
+            raise PermissionDenied()
         obj.delete()
         return DeleteEvent(ok=True)
 
@@ -259,11 +278,14 @@ class UpdateEventImage(graphene.Mutation):
     success = graphene.String()
     picture = graphene.String()
 
+    @permissions_checker([IsCoreMember])
     def mutate(self,  info, id, *args, **kwargs):
         # When using it in Django, context will be the request
         files = info.context.FILES
         event: Event
         event = Event.objects.get(id=id)
+        if not check_object_permissions([IsCoreMember], info.context, event):
+            raise PermissionDenied()
         event.featured_image = files["file"]
         event.save()
         event = Event.objects.get(id=id)
@@ -309,7 +331,6 @@ class Query(graphene.ObjectType):
         return Category.objects.get(id=cat).event_set.all()
 
     def resolve_categories(root, info):
-        print("hello")
         return Category.objects.all()
 
 

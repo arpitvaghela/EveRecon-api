@@ -1,7 +1,4 @@
-import sys
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
@@ -33,7 +30,7 @@ class EveReconTest(JSONWebTokenTestCase):
 
     def create_dummy_community(self):
         user = self.create_dummy_user()
-        return Community.objects.create(
+        community = Community.objects.create(
             name="Test_community",
             address="Test_address",
             city="Test_city",
@@ -49,6 +46,19 @@ class EveReconTest(JSONWebTokenTestCase):
             website="https://www.facebook.com/",
             leader=user
         )
+        # core_member
+        core_members = []
+        for user in range(0, 5):
+            core_member = self.create_dummy_user()
+            core_members.append(core_member)
+        community.core_members.set(core_members)
+        # volunteer
+        volunteers = []
+        for user in range(0, 5):
+            volunteer = self.create_dummy_user()
+            volunteers.append(volunteer)
+        community.volunteers.set(volunteers)
+        return community
 
     def setUp(self):
         self.user = get_user_model().objects.create(username='test', password="Test@10", email="test@gmail.com")
@@ -295,16 +305,10 @@ class EveReconTest(JSONWebTokenTestCase):
     def test_volunteer_as_core_member(self):
         try:
             with transaction.atomic():
-                user = self.create_dummy_user()
                 community = self.create_dummy_community()
-
-                add_core_member = '''
-                    mutation addCoreMember ($community: ID!, $user: ID!) {
-                        addCoreMember (community: $community, user: $user) {
-                            ok
-                        }
-                    }
-                '''
+                core_members = community.core_members.all()
+                leader = community.leader
+                self.client.authenticate(leader)
 
                 add_volunteer = '''
                     mutation addVolunteer ($community: ID!, $user: ID!) {
@@ -316,14 +320,11 @@ class EveReconTest(JSONWebTokenTestCase):
 
                 variables = {
                     "community": community.id,
-                    "user": user.id
+                    "user": core_members[0].id
                 }
 
-                response = self.client.execute(add_core_member, variables)
-                self.assertNotIn('errors', response.to_dict())
-
-                response1 = self.client.execute(add_volunteer, variables)
-                self.assertIn('errors', response1.to_dict())
+                response = self.client.execute(add_volunteer, variables)
+                self.assertIn('errors', response.to_dict())
 
         except IntegrityError:
             pass
@@ -332,16 +333,10 @@ class EveReconTest(JSONWebTokenTestCase):
     def test_core_member_as_volunteer(self):
         try:
             with transaction.atomic():
-                user = self.create_dummy_user()
                 community = self.create_dummy_community()
-
-                add_volunteer = '''
-                    mutation addVolunteer ($community: ID!, $user: ID!) {
-                        addVolunteer (community: $community, user: $user) {
-                            ok
-                        }
-                    }
-                '''
+                volunteers = community.volunteers.all()
+                leader = community.leader
+                self.client.authenticate(leader)
 
                 add_core_member = '''
                     mutation addCoreMember ($community: ID!, $user: ID!) {
@@ -353,14 +348,11 @@ class EveReconTest(JSONWebTokenTestCase):
 
                 variables = {
                     "community": community.id,
-                    "user": user.id
+                    "user": volunteers[0].id
                 }
 
-                response = self.client.execute(add_volunteer, variables)
-                self.assertNotIn('errors', response.to_dict())
-
-                response1 = self.client.execute(add_core_member, variables)
-                self.assertIn('errors', response1.to_dict())
+                response = self.client.execute(add_core_member, variables)
+                self.assertIn('errors', response.to_dict())
 
         except IntegrityError:
             pass
@@ -484,9 +476,9 @@ class EveReconTest(JSONWebTokenTestCase):
         self.assertNotIn('errors', response.to_dict())
         content = list(response.data.items())[0][1]
         self.assertEquals(content, data)
-    
+
     # Invalid EmailID in create user
-    def test_create_user(self):
+    def test_create_user_email_validation(self):
         create_user_email = '''
         mutation createUser ($city: String, $contact: String, $country: String, $email: String!, $firstname: String, $lastname: String, $password: String!, $username: String!) {
             createUser (city: $city, contact: $contact, country: $country, email: $email, firstname: $firstname, lastname: $lastname, password: $password, username: $username) {
