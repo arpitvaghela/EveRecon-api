@@ -231,7 +231,7 @@ class Event(models.Model):
         return self.name
 
 
-@receiver(post_save, sender=Event)
+@receiver(pre_save, sender=Event)
 def event_time(sender, instance, *args, **kwargs):
     if instance.start_time >= instance.end_time:
         raise ValidationError(
