@@ -1,7 +1,4 @@
-import sys
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
 
@@ -690,3 +687,17 @@ class EveReconTest(JSONWebTokenTestCase):
 
         response = self.client.execute(create_community, variables)
         self.assertIn('errors', response.to_dict())
+
+    # Test member count validation
+    def test_member_count(self):
+        community = self.create_dummy_community()
+        member_count = community.members_count
+
+        follower = []
+        for i in range(0, 5):
+            user = self.create_dummy_user()
+            follower.append(user)
+
+        community.followers.set(follower)
+
+        self.assertEquals(member_count + len(follower), len(community.followers.all()))

@@ -1,6 +1,7 @@
 import time
 import pytz
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.utils import dateparse
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.testcases import JSONWebTokenTestCase
@@ -358,6 +359,9 @@ class EveReconTest(JSONWebTokenTestCase):
     # EventByID testing
     def test_event_by_id(self):
         event = self.create_dummy_event()
+        leader = event.community.leader
+        self.client.authenticate(leader)
+
         event_by_id = '''
             query eventById ($id: ID){
                  eventById(id: $id) {
@@ -822,3 +826,124 @@ class EveReconTest(JSONWebTokenTestCase):
         }
         response = self.client.execute(create_speaker_instagram, variables)
         self.assertIn('errors', response.to_dict())
+
+    # Max Event RSVP
+    def test_max_event_RSVP_validation(self):
+        try:
+            with transaction.atomic():
+                event = self.create_dummy_event()
+                event.max_RSVP = 0
+                event.save()
+
+                user = self.create_dummy_user()
+                self.client.authenticate(user)
+                register_event = '''
+                            mutation registerEvent ($id: ID!) {
+                                registerEvent (id: $id) {
+                                    event {
+                                        id
+                                    }
+                                }
+                            }
+                            '''
+                variables = {
+                    'id': event.id
+                }
+                self.client.execute(register_event, variables)
+
+                leader = event.community.leader
+                self.client.authenticate(leader)
+
+                event_RSVP = '''
+                    query eventById ($id: ID) {
+                        eventById (id: $id) {
+                            attendees {
+                                id
+                                username
+                                email
+                            }
+                        }
+                    }
+                    '''
+
+                response = self.client.execute(event_RSVP, variables)
+                self.assertIn('errors', response.to_dict())
+
+        except IntegrityError:
+            pass
+
+    # test leader, core-members and volunteers auto registration
+    def test_auto_registration_validation(self):
+        community = self.create_dummy_community()
+        leader = community.leader
+        self.client.authenticate(leader)
+        category = self.create_dummy_category()
+
+        start_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+        time.sleep(1)
+        end_time = timezone.localtime(timezone.now(), pytz.timezone('Asia/Kolkata'))
+
+        create_event = '''
+                mutation createEvent ($address: String, $category: ID!, $city: String, $community: ID, $country: String, $description: String!, $endTime: DateTime!, $kind: String!, $liveUrl: String, $maxRsvp: Int, $name: String!, $startTime: DateTime!, $tags: [String]) {
+                    createEvent (address: $address, category: $category, city: $city, community: $community, country: $country, description: $description, endTime: $endTime, kind: $kind, liveUrl: $liveUrl, maxRsvp: $maxRsvp, name: $name, startTime: $startTime, tags: $tags) {
+                        event {
+                            id
+                            name
+                            
+                        }
+                    }
+                }
+                '''
+
+        variables = {
+            "address": "Test_address",
+            "category": category.id,
+            "city": "Test_city",
+            "community": community.id,
+            "country": "Test_country",
+            "description": "Test_description",
+            "kind": "V",
+            "liveUrl": "https://github.com/arpitvaghela/EveRecon-api",
+            "maxRsvp": 50,
+            "name": "Test_event",
+            "startTime": start_time,
+            "endTime": end_time,
+            "tags": ["Test_tag1", "Test_tag2", "Test_tag3"]
+        }
+
+        response = self.client.execute(create_event, variables)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+
+        event_attendees = '''
+            query eventById ($id: ID) {
+                eventById (id: $id) {
+                    attendees {
+                        id
+                        username
+                        email
+                    }
+                }
+            }
+            '''
+
+        event = Event.objects.get(id=int(content['event']['id']))
+        var = {'id': event.id}
+
+        users = []
+        leader = event.community.leader
+        users.append({'id': str(leader.id), 'username': leader.username, 'email': leader.email})
+
+        for user in event.community.core_members.all():
+            js = {'id': str(user.id), 'username': user.username, 'email': user.email}
+            users.append(js)
+
+        for user in event.community.volunteers.all():
+            js = {'id': str(user.id), 'username': user.username, 'email': user.email}
+            users.append(js)
+
+        data = {'attendees': users}
+        response = self.client.execute(event_attendees, var)
+        self.assertNotIn('errors', response.to_dict())
+        content = list(response.data.items())[0][1]
+        self.assertEquals(content, data)
