@@ -237,7 +237,23 @@ def event_time(sender, instance, *args, **kwargs):
         raise ValidationError(
             "Event start-time cannot be greater than end-time")
 
+@receiver(m2m_changed, sender=Event.attendees.through)
+def check_max_RSVP(sender, action, pk_set, instance, *args, **kwargs):
+    if action == "post_add" and instance.attendees.count() > instance.max_RSVP:
+        print("Error")
+        raise ValidationError("Maximum RSVPs exceeded for the event")
 
+# Won't work because of transaction reasons
+# @receiver(post_save, sender=Event)
+# def add_organizers_as_attendees(sender, instance, created, *args, **kwargs):
+#     print("I fired")
+#     if created or not created:
+#         print("I am in")
+#         community = instance.community
+#         print(community.leader)
+#         instance.attendees.add(community.leader.id)
+#         instance.attendees.add(*(community.core_members.all()))
+#         instance.attendees.add(*(community.volunteers.all()))        
 class Speaker(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255, null=True, blank=True)

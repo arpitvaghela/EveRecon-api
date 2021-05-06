@@ -60,6 +60,10 @@ class CreateEvent(graphene.Mutation):
         for speaker_id in speaker_list:
             if Speaker.objects.get(id=speaker_id):
                 event.speakers.add(Speaker.objects.get(id=speaker_id))
+        community = event.community
+        event.attendees.add(community.leader)
+        event.attendees.add(*(community.core_members.all()))
+        event.attendees.add(*(community.volunteers.all()))
         event.save()
         # For datetime - https://github.com/graphql-python/graphene/issues/136
         # event.tags.add(*tags)
