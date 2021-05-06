@@ -237,6 +237,7 @@ def event_time(sender, instance, *args, **kwargs):
         raise ValidationError(
             "Event start-time cannot be greater than end-time")
 
+
 @receiver(m2m_changed, sender=Event.attendees.through)
 def check_max_RSVP(sender, action, pk_set, instance, *args, **kwargs):
     if action == "post_add" and instance.attendees.count() > instance.max_RSVP:
@@ -253,11 +254,13 @@ def check_max_RSVP(sender, action, pk_set, instance, *args, **kwargs):
 #         print(community.leader)
 #         instance.attendees.add(community.leader.id)
 #         instance.attendees.add(*(community.core_members.all()))
-#         instance.attendees.add(*(community.volunteers.all()))        
+#         instance.attendees.add(*(community.volunteers.all()))
+
+
 class Speaker(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     facebook = models.URLField(
         validators=[validation_facebook], blank=True, null=True)
     instagram = models.URLField(
@@ -326,7 +329,7 @@ def update_members_count(sender, action, pk_set, instance, *args, **kwargs):
     if action == "post_add" or action == "post_remove":
         instance.members_count = instance.followers.count()
         instance.save()
-    
+
 
 @receiver(m2m_changed, sender=Community.core_members.through)
 def core_member_role_dependencies(sender, action, pk_set, instance, *args, **kwargs):
