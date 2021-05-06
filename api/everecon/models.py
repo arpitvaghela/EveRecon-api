@@ -305,6 +305,13 @@ class Community(models.Model):
         return self.name
 
 
+@receiver(m2m_changed, sender=Community.followers.through)
+def update_members_count(sender, action, pk_set, instance, *args, **kwargs):
+    if action == "post_add" or action == "post_remove":
+        instance.members_count = instance.followers.count()
+        instance.save()
+    
+
 @receiver(m2m_changed, sender=Community.core_members.through)
 def core_member_role_dependencies(sender, action, pk_set, instance, *args, **kwargs):
     volunteers = []
