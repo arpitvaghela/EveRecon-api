@@ -205,6 +205,7 @@ class UpdateEvent(graphene.Mutation):
         max_RSVP = graphene.Int()
         category = graphene.ID()
         tags = graphene.List(graphene.String)
+        speakers = graphene.List(graphene.ID)
 
     event = graphene.Field(EventType)
     community = graphene.Field(CommunityType)
@@ -214,6 +215,12 @@ class UpdateEvent(graphene.Mutation):
     @ permissions_checker([IsCoreMember])
     def mutate(root, info, **kwargs):
         id = kwargs.pop("id")
+
+        if "speakers" in kwargs.keys():
+            speaker_list = kwargs.pop("speakers")
+        else:
+            speaker_list = []
+
         try:
             tags = kwargs.pop("tags")
 
@@ -226,6 +233,10 @@ class UpdateEvent(graphene.Mutation):
 
         Event.objects.filter(id=id).update(**kwargs)
         event = Event.objects.get(id=id)
+        for speaker_id in speaker_list:
+            if Speaker.objects.get(id=speaker_id):
+                event.speakers.add(Speaker.objects.get(id=speaker_id))
+
         if tags:
             event.tags.clear()
             for tag in tags:
