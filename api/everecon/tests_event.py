@@ -88,14 +88,17 @@ class EveReconTest(JSONWebTokenTestCase):
         return event
 
     def create_dummy_speaker(self):
-        return Speaker.objects.create(
+        global id
+        speaker =  Speaker.objects.create(
             description="Test_Description",
-            email="test@gmail.com",
+            email="test_" + str(id) + "@gmail.com",
             facebook='https://www.facebook.com/mrparth23/',
             first_name="Test_firstname",
             instagram="https://www.instagram.com/mr.parth23/",
             last_name="Test_lastname"
         )
+        id += 1
+        return speaker
 
     def create_dummy_category(self):
         global id
